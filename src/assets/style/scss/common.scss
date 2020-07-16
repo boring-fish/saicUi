@@ -1,0 +1,42 @@
+@import './variables.scss';
+@import './el-rest.scss';
+@import './reset.scss';
+
+// border-style
+.box-bg-border{
+  background:rgba(18,22,38,1);
+  box-shadow:inset 0px 2px 50px 16px rgba(31,34,45,1);
+  border-radius:24px;
+  border:4px solid rgba(58,66,99,1);
+  position: relative;
+  .border{
+    position: absolute;
+    padding: 20px;
+    border-style: solid;
+    border-color: #48558B;
+  }
+  .border-top-left{
+    border-width: 4px 0 0 4px;
+    top: -4px;
+    left: -4px;
+    border-radius: 24px 0 0 0;
+  }
+  .border-top-right{
+    border-width: 4px 4px 0 0;
+    top: -4px;
+    right: -4px;
+    border-radius: 0 24px 0 0;
+  }
+  .border-bottom-left{
+    border-width: 0 0 4px 4px;
+    bottom: -4px;
+    left: -4px;
+    border-radius: 0 0 0 24px;
+  }
+  .border-bottom-right{
+    border-width: 0 4px 4px 0;
+    bottom: -4px;
+    right: -4px;
+    border-radius: 0 0 24px 0;
+  }
+}

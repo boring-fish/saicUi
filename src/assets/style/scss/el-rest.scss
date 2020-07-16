@@ -1,0 +1,7 @@
+// 解决checkbox选中抖动问题
+.el-radio ::after {
+  transition: none!important;
+}
+.el-checkbox ::after {
+  transition: none!important;
+}
