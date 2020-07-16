@@ -1,0 +1,40 @@
+image: node:12
+
+cache:
+  paths:
+    - node_modules/
+
+build_node:
+  stage: build
+  script:
+    - npm set registry https://registry.npm.taobao.org/
+    - yarn
+    - npm run build
+
+build_branch:
+  stage: build
+  image:
+    name: gcr.azk8s.cn/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - export WORKING_DIR=$CI_PROJECT_DIR
+    - env
+    - echo "{\"auths\":{\"harbor.cd.leadswarp.com\":{\"auth\":\"c2FpYzp4b1Jvb0c2cw==\"}}}" > /kaniko/.docker/config.json
+    - echo $CI_COMMIT_SHA > $WORKING_DIR/build-info.log
+    - /kaniko/executor --context $WORKING_DIR --dockerfile $WORKING_DIR/Dockerfile  --no-push --destination harbor.cd.leadswarp.com/saic/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
+  except:
+    - tags
+
+build_docker_image_on_tag:
+  stage: build
+  image:
+    name: gcr.azk8s.cn/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - export WORKING_DIR=$CI_PROJECT_DIR
+    - env
+    - echo "{\"auths\":{\"harbor.cd.leadswarp.com\":{\"auth\":\"c2FpYzp4b1Jvb0c2cw==\"}}}" > /kaniko/.docker/config.json
+    - echo $CI_COMMIT_SHA > $WORKING_DIR/build-info.log
+    - /kaniko/executor --cache=true --context $WORKING_DIR --dockerfile $WORKING_DIR/Dockerfile  --destination harbor.cd.leadswarp.com/saic/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
+  only:
+    - tags
