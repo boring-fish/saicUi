@@ -1,7 +1,7 @@
 <template>
   <div class="earlywarn-wrap">
     <el-dialog
-      title="预警和报警"
+      title="预警和报警1"
       :visible.sync="dialogVisible"
       width="2400px"
       height="1350px"
