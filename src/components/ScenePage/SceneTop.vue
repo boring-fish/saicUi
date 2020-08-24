@@ -116,7 +116,7 @@ export default class SceneTop extends Vue {
           height: 696px;
           background: rgba(18, 22, 38, 1);
           border-radius: 24px;
-          border: 4px solid rgba(58, 66, 99, 1);
+          border: 3px solid rgba(58, 66, 99, 1);
           z-index: 1;
           padding: 45px 0;
           .el-radio-group {
