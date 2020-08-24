@@ -1,6 +1,8 @@
 import Vue, { VNode } from 'vue';
 import { ApiService } from '@/api';
 import { CommonData } from '@/utils/CommonData';
+import { Permission } from '@/utils/permission';
+
 declare global {
   namespace JSX {
     // tslint:disable no-empty-interface
@@ -13,4 +15,5 @@ declare global {
   }
   const $api: ApiService;
   const $commonData: CommonData;
+  const $permission: Permission;
 }

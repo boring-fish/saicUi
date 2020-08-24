@@ -4,7 +4,9 @@
     <span class="border border-top-right"></span>
     <span class="border border-bottom-left"></span>
     <span class="border border-bottom-right"></span>
-    <SceneHeader :title="title"></SceneHeader>
+    <div class="sceneTarget1"></div>
+    
+    <!-- <SceneHeader :title="title"></SceneHeader>
     <div class="scenetargetd">
       <div class="scenetargetdtop">
         <div class="scenetargetdtopbq" v-for="(item,index) in targetList" :key="index">
@@ -36,7 +38,7 @@
           >{{argettiaoitem.rate}}%</span>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -211,8 +213,8 @@ export default class SceneTarget extends Vue {
     }
   };
   private mounted() {
-    this.setdata();
-    this.scenechartinit();
+    // this.setdata();
+    // this.scenechartinit();
   }
   public setdata() {
     let that = this;
@@ -253,10 +255,18 @@ export default class SceneTarget extends Vue {
 .sceneTarget-warp {
   width: 100%;
   height: 100%;
+   
+    .sceneTarget1{
+      width: 100%;
+      height: 100%;
+      background: url('../../assets/img/expect.png') no-repeat;
+      background-position: 55px 45px;
+      background-size: 100% 60%;
+    }
   .scenetargetd {
     padding: 40px 0 40px 60px;
-    border-bottom: 1px solid #002f3b;
-    height: 850px;
+    border-bottom: 2px solid rgba(58,66,99,1);
+    height: 835px;
     .scenetargetdtop {
       color: #ffffff;
       font-size: 28px;

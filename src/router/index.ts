@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter, { RouteConfig } from 'vue-router';
 
-import {
+import { 
   Login,
   GetGuest,
   DashBoard,
@@ -10,32 +10,45 @@ import {
   TurnoverDefeate,
   Index,
   SpreadNav,
-  // SceneIndex,
-  // SceneSelect,
-  // SceneDetail
   SettingIndex,
   Setting,
-  AimSetting
+  AimSetting,
+  UserRoleSetting,
+  EarlyWarnSetting,
+  NoPermission,
+  SceneIndex,
+  SceneSelect,
+  SceneDetail
 } from '@/page';
 
 Vue.use(VueRouter);
 
 const routes: RouteConfig[] = [
   { 
-    path: '/settingindex', 
-    name: 'settingindex',
+    path: '/setting', 
+    name: 'setting',
     component: SettingIndex,
-    redirect: '/settingindex/setting',
+    redirect: '/setting/index',
     children: [
       {
-        path: 'setting',
-        name: 'setting',
+        path: 'index',
+        name: 'index',
         component: Setting,
       },
       {
         path: 'aimSetting',
         name: 'aimSetting',
         component: AimSetting,
+      },
+      {
+        path: 'userRoleSetting',
+        name: 'userRoleSetting',
+        component: UserRoleSetting,
+      },
+      {
+        path: 'earlyWarnSetting',
+        name: 'earlyWarnSetting',
+        component: EarlyWarnSetting,
       },
     ]
   },
@@ -45,21 +58,29 @@ const routes: RouteConfig[] = [
     component: Index,
     redirect: '/dashboard',
     children: [
-    
       {
         path: 'dashboard',
         name: 'dashboard',
         component: DashBoard,
+        meta: {
+          isDashboard: true
+        }
       },
       {
         path: 'spread',
         name: 'spread',
         component: SpreadNav,
+        meta: {
+          isDashboard: true
+        },
       },
       {
         path: 'visitors',
         name: 'visitors',
         component: GetGuest,
+        meta: {
+          isDashboard: true
+        },
       },
       {
         path: 'conversion',
@@ -71,36 +92,51 @@ const routes: RouteConfig[] = [
             path: 'channelconversion',
             name: 'ChannelConversion',
             component: ChannelConversion,
+            meta: {
+              isDashboard: true
+            },
           },
           {
             path: 'turnoverdefeate',
             name: 'TurnoverDefeate',
             component: TurnoverDefeate,
+            meta: {
+              isDashboard: true
+            },
           }
         ]
       }
     ]
-
   },
-  // {
-  //   path: '/sceneIndex',
-  //   name: 'sceneIndex',
-  //   component: SceneIndex,
-  //   redirect: '/sceneDetail',
-  //   children: [
-  //     {
-  //       path: '/sceneSelect',
-  //       name: 'sceneSelect',
-  //       component: SceneSelect,
-  //     },
-  //     {
-  //       path: '/sceneDetail',
-  //       name: 'sceneDetail',
-  //       component: SceneDetail,
-  //     }
-  //   ]
-  // },
-  
+  {
+    path: '/nopermission',
+    name: 'NoPermission',
+    component: NoPermission,
+  },
+  {
+      path: '/sceneIndex',
+      name: 'sceneIndex',
+      component: SceneIndex,
+      redirect: '/sceneDetail',
+      children: [
+        {
+          path: '/sceneSelect',
+          name: 'sceneSelect',
+          component: SceneSelect,
+          meta: {
+            isDashboard: true
+          }
+        },
+        {
+          path: '/sceneDetail',
+          name: 'sceneDetail',
+          component: SceneDetail,
+          meta: {
+            isDashboard: true
+          }
+        }
+      ]
+    },
   // {
   //   path: 'conversion',
   //   name: 'conversion',

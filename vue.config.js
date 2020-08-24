@@ -19,12 +19,9 @@ module.exports = {
     //反向代理
     proxy: {
       '/api': {
-        // target: 'http://10.106.45.78:8080',
-        // target: 'https://ak4soo9ohsie.cd.leadswarp.com',
         target: 'http://10.106.20.1:8080',
-
         changeOrigin: true,
-      }
+      },
     }
   },
   css: {

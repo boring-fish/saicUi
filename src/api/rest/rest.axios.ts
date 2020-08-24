@@ -1,6 +1,9 @@
 import axios, { AxiosError, AxiosResponse, AxiosRequestConfig } from 'axios';
 import Vue from 'vue';
-
+let getCodeApi = async() => {
+  let resp = await $api.PermissionApi.getRedirectUri({});
+  window.location.replace(resp.redirectUri);
+};
 let loadingCount: number = 0;
 // TODO Loading...
 axios.interceptors.request.use(
@@ -15,6 +18,11 @@ axios.interceptors.request.use(
     }
     if (!config.params.seriesIds) {
       delete config.params.seriesIds;
+    }
+    if (localStorage.getItem('token')) {
+     let useInfo: any = localStorage.getItem('userInfo');
+         useInfo = JSON.parse(useInfo);
+         config.headers.token = useInfo.accessToken;
     }
     return config;
   },
@@ -39,6 +47,16 @@ axios.interceptors.response.use(
     loadingCount--;
     if ( loadingCount === 0 ) {
       Vue.prototype.$loading().close();
+    }
+    let STATUS_CODE = error.response?.status;
+    if (STATUS_CODE === 403) {
+      $api.DashboardApi.logout().then((res: any) => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userInfo');
+        console.log(res, '退出');
+        window.location.replace(res.remoteLogoutUri);
+        // return;
+      });
     }
     return Promise.reject(error.response);
   }

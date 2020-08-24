@@ -75,7 +75,7 @@
                     <div class="propagationTbdata">
 
                         <div class="propagationTb">同比</div>
-                        <div v-if="propagationData.tb" class="propagationTbvalue" :class="propagationData.tb.startsWith('-')? 'red' : 'green'">
+                        <div v-if="propagationData.tb" class="propagationTbvalue" :class="tbpropColor === 1 ? 'red' : tbpropColor === 2 ? 'yellow' : tbpropColor === 3 ? 'green' : 'white'">
                             <span class="iconfont iconxiajiang" v-if="(propagationData.tb).startsWith('-')"></span>
                             <span class="iconfont iconshangsheng" v-else></span>
                             <span class="percentageData">{{propagationData.tb | negative}}</span>
@@ -87,7 +87,7 @@
                     <div class="propagationTbdata"> 
 
                          <div class="propagationTb">环比</div>
-                         <div v-if="propagationData.hb" class="propagationTbvalue " :class="propagationData.hb.startsWith('-')? 'red' : 'green'" >
+                         <div v-if="propagationData.hb" class="propagationTbvalue " :class="hbpropColor === 1 ? 'red' : hbpropColor === 2 ? 'yellow' : hbpropColor === 3 ? 'green' : 'white'" >
                           <span class="iconfont iconxiajiang" v-if="(propagationData.hb).startsWith('-')"></span>
                           <span class="iconfont iconshangsheng" v-else></span>
                           <span class="percentageData">{{propagationData.hb | negative}}</span>
@@ -97,12 +97,12 @@
 
                     <div class="propagationAims">
                       <span class="propagationaimsValue">进度目标值</span>
-                      <span>{{propagationData.aims? propagationData.aims : '—' }}</span>
+                      <span class="actualStyle">{{propagationData.aims? propagationData.aims : '—' }}</span>
                       </div>
 
                     <div class="propagationAims">
                       <span class="propagationaimsValue">完成率</span>
-                      <span :class="propagationData.finished? 'green' : ''">{{propagationData.finished? propagationData.finished : '—'}}</span>
+                      <span class="actualStyle" :class="aimpropColor === 1 ? 'red' : aimpropColor === 2 ? 'yellow' : aimpropColor === 3 ? 'green' : 'white'">{{propagationData.finished? propagationData.finished : '—'}}</span>
                     </div>
 
                   </div>
@@ -156,6 +156,9 @@
                       <div class="contactTitle">厂方分配</div>
                       <Ratio :ratioData="contactRatiodata"
                             :showProportion="false"
+                            :tbValue="tbcontactColor"
+                            :hbValue="hbcontactColor"
+                            :aimValue="aimcontactColor"
                       />
                     </div>
 
@@ -163,6 +166,7 @@
                         <!-- <div ref="contactEchart"></div> -->
 
                     </div>
+                    <img src="../../assets/img/detailsIcon.png" alt="" @click="detailsIcon">
                   </div>
 
                 </div>
@@ -176,6 +180,9 @@
                           <div class="publictextStyle">垂媒</div>
                           <Ratio :ratioData="verticalRatiodata"
                                   :showProportion="false"
+                                  :tbValue="tbverticalColor"
+                                  :hbValue="hbverticalColor"
+                                  :aimValue="aimverticalColor"
                           />
                         </div>
                         <div class="publicEchartStyle" ref="verticalMediaEchart"></div>
@@ -192,6 +199,9 @@
                       <div class="publictextStyle">外拓获客</div>
                       <Ratio :ratioData="outreachRatiodata"
                             :showProportion="false"
+                            :tbValue="tboutreachColor"
+                            :hbValue="hboutreachColor"
+                            :aimValue="aimoutreachColor"
                       />                    
                     </div>
                     <div class="publicEchartStyle" ref="outreachEchart"></div>
@@ -202,6 +212,9 @@
                       <div class="publictextStyle">自然获客</div>
                       <Ratio :ratioData="naturalRatiodata"
                             :showProportion="false"
+                            :tbValue="tbnaturalColor"
+                            :hbValue="hbnaturalColor"
+                            :aimValue="aimnaturalColor"
                       />
                     </div>
                     <div class="publicEchartStyle" ref="naturalEchart"></div>
@@ -235,13 +248,13 @@
             <span class="border border-bottom-left"></span>
             <span class="border border-bottom-right"></span>          
             <div class="clueAllocationTitle">意向</div>
-            <el-button  v-if="brandName === '名爵'" type="primary" class="intention-detail" @click="jump">意向明细<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+            <el-button  v-if="brandName === '名爵'" type="primary" class="intention-detail" @click="jump"><span class="iconfont iconyixiangmingxi intentionIcon"></span>意向明细<i class="el-icon-arrow-right el-icon--right"></i></el-button>
             <div class="clueAllocationValue">
               <div class="thousand"><span class="blue">{{clueAllocationData.value? clueAllocationData.value : '——'}}</span>{{clueAllocationData.unit}}</div>
 
               <div class="clueAllocationTb">
                 <div class="publicMarginRight">同比</div>
-                  <div v-if="clueAllocationData.tb" class="propagationTbvalue" :class="clueAllocationData.tb.startsWith('-')? 'red' : 'green'">
+                  <div v-if="clueAllocationData.tb" class="propagationTbvalue" :class="tbclueAllColor === 1 ? 'red' : tbclueAllColor === 2 ? 'yellow' : tbclueAllColor === 3 ? 'green' : 'white'">
                       <span class="iconfont iconxiajiang" v-if="(clueAllocationData.tb).startsWith('-')"></span>
                       <span class="iconfont iconshangsheng" v-else></span>
                       <span class="percentageData">{{clueAllocationData.tb | negative}}</span>
@@ -251,7 +264,7 @@
 
               <div class="clueAllocationHb">
                   <div class="publicMarginRight">环比</div>
-                  <div v-if="clueAllocationData.hb" class="propagationTbvalue" :class="clueAllocationData.hb.startsWith('-')? 'red' : 'green'">
+                  <div v-if="clueAllocationData.hb" class="propagationTbvalue" :class="hbclueAllColor === 1 ? 'red' : hbclueAllColor === 2 ? 'yellow' : hbclueAllColor === 3 ? 'green' : 'white'">
                       <span class="iconfont iconxiajiang" v-if="(clueAllocationData.hb).startsWith('-')"></span>
                       <span class="iconfont iconshangsheng" v-else></span>
                       <span class="percentageData">{{clueAllocationData.hb | negative}}</span>
@@ -264,7 +277,7 @@
               </div>
               <div class="clueAllocationFinished">
                 <span class="publicMarginRight enlarge">完成率</span>
-                <span class="enlarge">{{clueAllocationData.finished ? clueAllocationData.finished : '—'}}</span>
+                <span class="enlarge" :class="aimclueAllColor === 1 ? 'red' : aimclueAllColor === 2 ? 'yellow' : aimclueAllColor === 3 ? 'green' : 'white'">{{clueAllocationData.finished ? clueAllocationData.finished : '—'}}</span>
               </div>
             </div>
           </div>
@@ -490,11 +503,12 @@
                 <span class="border border-top-right"></span>
                 <span class="border border-bottom-left"></span>
                 <span class="border border-bottom-right"></span>
+                <span class="iconfont iconyonghuqun crowd" @click="crowd" v-show="true"></span>
                 <div class="defeatpoolData">
                     <!-- <div class="defeatPool"> -->
                       <div class="publicDealStyle">
                         <div class="publictextStyle">
-                          战败池
+                          战败培育池
                           <div class="sum"><span class="blue">{{defeatData.value ? defeatData.value : '——'}}</span>{{defeatData.unit}}</div>
                         </div>
                         <div class="dealTb">
@@ -553,7 +567,7 @@
 
                             <div class="publicMarginRight">同比</div>
 
-                            <div v-if="rwtoShopData.tb"  class="tbhb-width" :class="(rwtoShopData.tb).startsWith('-') ? 'red' : 'green'">
+                            <div v-if="rwtoShopData.tb"  class="tbhb-width" :class="tbrwtoShopColor === 1 ? 'red' : tbrwtoShopColor === 2 ? 'yellow' : tbrwtoShopColor === 3 ? 'green' : 'white'">
                                <span class="iconfont iconxiajiang" v-if="(rwtoShopData.tb).startsWith('-')"></span>
                                <span class="iconfont iconshangsheng" v-else></span>
                                <span class="publicMarginLeft">{{rwtoShopData.tb | negative}}</span>
@@ -575,7 +589,7 @@
                           <div class="dealTb">
                               <div class="publicMarginRight">环比</div>
 
-                            <div v-if="rwtoShopData.hb" class="tbhb-width" :class="(rwtoShopData.hb).startsWith('-') ? 'red' : 'green'">
+                            <div v-if="rwtoShopData.hb" class="tbhb-width" :class="hbrwtoShopColor === 1 ? 'red' : hbrwtoShopColor === 2 ? 'yellow' : hbrwtoShopColor === 3 ? 'green' : 'white'">
                                <span class="iconfont iconxiajiang" v-if="(rwtoShopData.hb).startsWith('-')"></span>
                                <span class="iconfont iconshangsheng" v-else></span>
                                <span class="publicMarginLeft">{{rwtoShopData.hb | negative}}</span>
@@ -584,7 +598,7 @@
 
                               <div class="dealtims">
                                 <span class="publicPaddingright enlarge">完成率</span>
-                                <span class="tbhb-width enlarge">{{rwtoShopData.finished ? rwtoShopData.finished : '—'}}</span>
+                                <span class="tbhb-width enlarge" :class="aimrwtoShopColor === 1 ? 'red' : aimrwtoShopColor === 2 ? 'yellow' : aimrwtoShopColor === 3 ? 'green' : 'white'">{{rwtoShopData.finished ? rwtoShopData.finished : '—'}}</span>
                               </div>
 
                               <!-- <div class="average">
@@ -666,7 +680,7 @@
                     </div>
                   </div> -->
                     <div class="publicDealStyle">
-                      <el-button  v-if="brandName === '名爵'" type="primary" class="market-shares" @click="marketJump">市占率分析<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                      <el-button  v-if="brandName === '名爵'" type="primary" class="market-shares" @click="marketJump"><span class="iconfont iconzhanbi analysisIcon"></span>市占率分析<i class="el-icon-arrow-right el-icon--right"></i></el-button>
                           <div class="publictextStyle">
                             总成交量
                             <div class="sum"><span class="blue">{{allDealData.value ? allDealData.value : '——'}}</span>{{allDealData.unit}}</div>
@@ -676,7 +690,7 @@
 
                             <div class="publicMarginRight">同比</div>
 
-                            <div v-if="allDealData.tb"  class="tbhb-width" :class="(allDealData.tb).startsWith('-') ? 'red' : 'green'">
+                            <div v-if="allDealData.tb"  class="tbhb-width" :class="tballDealColor === 1 ? 'red' : tballDealColor === 2 ? 'yellow' : tballDealColor === 3 ? 'green' : 'white'">
                                <span class="iconfont iconxiajiang" v-if="(allDealData.tb).startsWith('-')"></span>
                                <span class="iconfont iconshangsheng" v-else></span>
                                <span class="publicMarginLeft">{{allDealData.tb | negative}}</span>
@@ -688,7 +702,7 @@
                                <span class="tbhb-width enlarge">{{allDealData.aims ? allDealData.aims : '—'}}</span>
                             </div>
 
-                            <div class="average "style="margin-left:0;">
+                            <div class="average " style="margin-left:0;">
                               <span>线上平均转化周期</span>
                               <span class="tian" v-if="allDealData.average">{{allDealData.average}}天</span>
                               <span class="tian white" v-else>—</span>
@@ -699,7 +713,7 @@
                           <div class="dealTb">
                             <div class="publicMarginRight">环比</div>
 
-                            <div v-if="allDealData.hb"  class="tbhb-width" :class="(allDealData.hb).startsWith('-') ? 'red' : 'green'">
+                            <div v-if="allDealData.hb"  class="tbhb-width" :class="hballDealColor === 1 ? 'red' : hballDealColor === 2 ? 'yellow' : hballDealColor === 3 ? 'green' : 'white'">
                                <span class="iconfont iconxiajiang" v-if="(allDealData.hb).startsWith('-')"></span>
                                <span class="iconfont iconshangsheng" v-else></span>
                                <span class="publicMarginLeft">{{allDealData.hb | negative}}</span>
@@ -708,7 +722,7 @@
 
                             <div class="dealtims">
                               <span class="publicPaddingright enlarge">完成率</span>
-                              <span class="tbhb-width enlarge">{{allDealData.finished ? allDealData.finished : '—'}}</span>
+                              <span class="tbhb-width enlarge" :class="aimallDealColor === 1 ? 'red' : aimallDealColor === 2 ? 'yellow' : aimallDealColor === 3 ? 'green' : 'white'">{{allDealData.finished ? allDealData.finished : '—'}}</span>
                             </div>
 
                             <div class="average" style="margin-left: 58px;">
@@ -761,7 +775,7 @@
 
                             <div class="publicMarginRight">同比</div>
 
-                            <div v-if="cardData.tb" class="tbhb-width" :class="(cardData.tb).startsWith('-') ? 'red' : 'green'" >
+                            <div v-if="cardData.tb" class="tbhb-width" :class="tbcardColor === 1 ? 'red' : tbcardColor === 2 ? 'yellow' : tbcardColor === 3 ? 'green' : 'white'" >
                               <!-- <span class="iconfont iconxiajiang" v-if="(cardData.tb).startWith('-')"></span> -->
                                <span class="iconfont iconxiajiang" v-if="(cardData.tb).startsWith('-')"></span>
                                <span class="iconfont iconshangsheng" v-else></span>
@@ -784,7 +798,7 @@
                         <div class="dealTb">
                             <div class="publicMarginRight">环比</div>
 
-                            <div v-if="cardData.hb" class="tbhb-width" :class="(cardData.hb).startsWith('-') ? 'red' : 'green'">
+                            <div v-if="cardData.hb" class="tbhb-width" :class="hbcardColor === 1 ? 'red' : hbcardColor === 2 ? 'yellow' : hbcardColor === 3 ? 'green' : 'white'">
                                <span class="iconfont iconxiajiang" v-if="(cardData.hb).startsWith('-')"></span>
                                <span class="iconfont iconshangsheng" v-else></span>
                                <span class="publicMarginLeft">{{cardData.hb | negative}}</span>
@@ -793,7 +807,7 @@
 
                             <div class="dealtims">
                               <span class="publicPaddingright enlarge">完成率</span>
-                              <span class="tbhb-width enlarge">{{cardData.finished ? cardData.finished : '—'}}</span>
+                              <span class="tbhb-width enlarge" :class="aimscardColor === 1 ? 'red' : aimscardColor === 2 ? 'yellow' : aimscardColor === 3 ? 'green' : 'white'">{{cardData.finished ? cardData.finished : '—'}}</span>
                            </div>
                             </div>
                       </div>
@@ -892,6 +906,10 @@
              <div class=ntmodalPortrait></div>
            </div>
            </el-dialog>
+
+           <Nurture
+           :show.sync="PlayfairModal"
+            />
   </div>
 
 
@@ -899,8 +917,8 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch, InjectReactive } from 'vue-property-decorator';
-import { SideNav, Ratio, TopBar } from '@/components/index';
-import { calculation , numberFormat, finishingRate } from '@/utils/utils.ts';
+import { SideNav, Ratio, TopBar , Nurture } from '@/components/index';
+import { calculation , numberFormat, finishingRate , decideColor } from '@/utils/utils.ts';
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -914,7 +932,8 @@ interface TIMERANGE {
   components: {
     TopBar,
     SideNav,
-    Ratio
+    Ratio,
+    Nurture
   },
   filters: {
     negative: (value: any) => {
@@ -984,6 +1003,7 @@ export default class DashBoard extends Vue {
   changeDefeatedModal = false;
   //培育池模态框显示
   changeNurtureModal = false;
+  PlayfairModal = false;
 
   socializeValue: number = 128.49; 
 
@@ -1251,6 +1271,46 @@ publicRatioData = {
     outreach: 0
   };
  
+ //决定订单颜色的值
+ tbcardColor: number = 0;
+ hbcardColor: number = 0;
+ aimscardColor: number = 0;
+
+ //决定到店颜色的值
+ tbrwtoShopColor: number = 0;
+ hbrwtoShopColor: number = 0;
+ aimrwtoShopColor: number = 0;
+
+ //总成交颜色的值
+ tballDealColor: number = 0;
+ hballDealColor: number = 0;
+ aimallDealColor: number = 0;
+
+//渠道和意向颜色的值
+tbcontactColor: number = 0;
+hbcontactColor: number = 0;
+aimcontactColor: number = 0;
+
+tbverticalColor: number = 0;
+hbverticalColor: number = 0;
+aimverticalColor: number = 0;
+
+tboutreachColor: number = 0;
+hboutreachColor: number = 0;
+aimoutreachColor: number = 0;
+
+tbnaturalColor: number = 0;
+hbnaturalColor: number = 0;
+aimnaturalColor: number = 0;
+
+tbclueAllColor: number = 0;
+hbclueAllColor: number = 0;
+aimclueAllColor: number = 0;
+
+//兴趣颜色的值
+tbpropColor: number = 0;
+hbpropColor: number = 0;
+aimpropColor: number = 0;
 
   @Watch('filterData')
   onFilterDatachange() {
@@ -1318,6 +1378,10 @@ publicRatioData = {
     this.onRuleChange();
   }
 
+  crowd() {
+    console.log(1111);
+    this.PlayfairModal = true;
+  }
   mounted() {
     this.getOpporEchartsData().then((data: any) => {
       this.buildOpperLevel(data.now);
@@ -1520,6 +1584,10 @@ nurtureOpen() {
      seriesIds: this.series.toString(),
      bizModuleName: true
    };
+
+    let search = {
+      module: '意向'
+    };
         if ( this.checkedArea.length === $commonData.areaData.getAreaMap().length ) {
       delete params.rfsCodes;
       delete aimsList.rfsCodes;
@@ -1597,7 +1665,10 @@ nurtureOpen() {
 
     console.log(intentionAims , allAims , 2222);
 
-
+    const returnValue = await $api.DashboardApi.configuration(search);
+    const actualData = returnValue.datas[0];
+    console.log(actualData , '意向配置');
+      
     $api.DashboardApi.getopporOrderData(params).then( (res: any) => {
       console.log(res , '渠道');
       //第一方触点数据
@@ -1700,6 +1771,52 @@ nurtureOpen() {
           this.naturalRatiodata  = this.allOperationData(nownaturalData.now , intentionAims.natural );
           // this.shopkeeperRatiodata = this.allOperationData(nowdianshangData.now);
           this.clueAllocationData = this.allSumData(allNowsopporNum , allAims);
+          
+        if (actualData) {
+         this.tbcontactColor = decideColor( this.contactRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+         this.hbcontactColor = decideColor(this.contactRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+         this.aimcontactColor = decideColor(this.contactRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+        //  console.log(this.tbcardColor , this.hbcardColor ,  this.aimscardColor , '颜色值');
+        this.tbverticalColor = decideColor( this.verticalRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hbverticalColor = decideColor(this.verticalRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimverticalColor = decideColor(this.verticalRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+        this.tboutreachColor = decideColor( this.outreachRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hboutreachColor = decideColor(this.outreachRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimoutreachColor = decideColor(this.outreachRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+        this.tbnaturalColor = decideColor( this.naturalRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hbnaturalColor = decideColor(this.naturalRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimnaturalColor = decideColor(this.naturalRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+        this.tbclueAllColor = decideColor( this.clueAllocationData.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hbclueAllColor = decideColor(this.clueAllocationData.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimclueAllColor = decideColor(this.clueAllocationData.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+
+
+      } else {
+        this.tbcontactColor = 0;
+         this.hbcontactColor = 0;
+         this.aimcontactColor = 0;
+        //  console.log(this.tbcardColor , this.hbcardColor ,  this.aimscardColor , '颜色值');
+        this.tbverticalColor = 0;
+        this.hbverticalColor = 0;
+        this.aimverticalColor = 0;
+
+        this.tboutreachColor = 0;
+        this.hboutreachColor = 0;
+        this.aimoutreachColor = 0;
+
+        this.tbnaturalColor = 0;
+        this.hbnaturalColor = 0;
+        this.aimnaturalColor = 0;
+
+        this.tbclueAllColor = 0;
+        this.hbclueAllColor = 0;
+        this.aimclueAllColor = 0;
+      }
+
         } else {
           this.contactRatiodata = this.operationData(nowcontactData.now , nowcontactData.year , nowcontactData.last , intentionAims.contactAim);
           this.verticalRatiodata = this.operationData(nowverticalMediaData.now , nowverticalMediaData.year , nowverticalMediaData.last , intentionAims.verticalMedia);
@@ -1707,6 +1824,51 @@ nurtureOpen() {
           this.naturalRatiodata = this.operationData(nownaturalData.now , nownaturalData.year , nownaturalData.last , intentionAims.natural );
           // this.shopkeeperRatiodata = this.operationData(nowdianshangData.now , nowdianshangData.year , nowdianshangData.last);
           this.clueAllocationData = this.sumData(allNowsopporNum , allYearopporNum , allLastopporNum , allAims);
+
+        if (actualData) {
+         this.tbcontactColor = decideColor( this.contactRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+         this.hbcontactColor = decideColor(this.contactRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+         this.aimcontactColor = decideColor(this.contactRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+        //  console.log(this.tbcardColor , this.hbcardColor ,  this.aimscardColor , '颜色值');
+        this.tbverticalColor = decideColor( this.verticalRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hbverticalColor = decideColor(this.verticalRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimverticalColor = decideColor(this.verticalRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+        this.tboutreachColor = decideColor( this.outreachRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hboutreachColor = decideColor(this.outreachRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimoutreachColor = decideColor(this.outreachRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+        this.tbnaturalColor = decideColor( this.naturalRatiodata.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hbnaturalColor = decideColor(this.naturalRatiodata.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimnaturalColor = decideColor(this.naturalRatiodata.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+        this.tbclueAllColor = decideColor( this.clueAllocationData.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+        this.hbclueAllColor = decideColor(this.clueAllocationData.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+        this.aimclueAllColor = decideColor(this.clueAllocationData.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+
+
+
+      } else {
+        this.tbcontactColor = 0;
+         this.hbcontactColor = 0;
+         this.aimcontactColor = 0;
+        //  console.log(this.tbcardColor , this.hbcardColor ,  this.aimscardColor , '颜色值');
+        this.tbverticalColor = 0;
+        this.hbverticalColor = 0;
+        this.aimverticalColor = 0;
+
+        this.tboutreachColor = 0;
+        this.hboutreachColor = 0;
+        this.aimoutreachColor = 0;
+
+        this.tbnaturalColor = 0;
+        this.hbnaturalColor = 0;
+        this.aimnaturalColor = 0;
+
+        this.tbclueAllColor = 0;
+        this.hbclueAllColor = 0;
+        this.aimclueAllColor = 0;
+      }
         }
 
     })
@@ -1722,116 +1884,120 @@ nurtureOpen() {
   }
 
 // 战败api数据
-getDefeatdata() {
+ getDefeatdata() {
   let params = {
       brandId: this.brandId,
       type: this.time.key,
       rfsCodes: this.checkedArea.toString()
   };
+
   if ( this.checkedArea.length === $commonData.areaData.getAreaMap().length ) {
      delete params.rfsCodes;
     }
+
   $api.DashboardApi.defeatData(params).then( (res) => {
-      // console.log(res , '战败');
+      console.log(res , '战败');
       let olddefeatData = res.lsatYear[0];
       let nowdefeatData = res.now[0];
       let lastdefeatData = res.last[0];
+
+      this.defeatData = this.dealwithDefeat(nowdefeatData, olddefeatData, lastdefeatData);
       // console.log(olddefeatData);
-      if (!nowdefeatData) {
-        this.defeatData = {
-               value: '' ,
-               unit: '',
-               tb: '',
-               hb: '',
-              //  aims: '',
-              //  finished: ''
-           };
+//       if (!nowdefeatData) {
+//         this.defeatData = {
+//                value: '' ,
+//                unit: '',
+//                tb: '',
+//                hb: '',
+//               //  aims: '',
+//               //  finished: ''
+//            };
 
-           return;
-      }
+//            return;
+//       }
 
-  if (this.time.key === 'year' ) {
-      if (!lastdefeatData ) {
-        let defeatTb = '';
-        let defeatHb = '';
-        let defeatParams = numberFormat(nowdefeatData.defeat);
-        this.defeatData = {
-               value: defeatParams.value ,
-               unit: defeatParams.unit,
-               tb: defeatTb,
-               hb: defeatHb
-              //  aims: '',
-              //  finished: ''
-           };
-      } else {
-        let defeatTb = calculation(nowdefeatData.defeat , lastdefeatData.defeat );
-        let defeatHb = calculation(nowdefeatData.defeat , lastdefeatData.defeat );
-        let defeatParams = numberFormat(nowdefeatData.defeat);
-        this.defeatData = {
-               value: defeatParams.value ,
-               unit: defeatParams.unit,
-               tb: defeatTb,
-               hb: defeatHb
-              //  aims: '',
-              //  finished: ''
-           };
-      }
+//   if (this.time.key === 'year' ) {
+//       if (!lastdefeatData ) {
+//         let defeatTb = '';
+//         let defeatHb = '';
+//         let defeatParams = numberFormat(nowdefeatData.defeat);
+//         this.defeatData = {
+//                value: defeatParams.value ,
+//                unit: defeatParams.unit,
+//                tb: defeatTb,
+//                hb: defeatHb
+//               //  aims: '',
+//               //  finished: ''
+//            };
+//       } else {
+//         let defeatTb = calculation(nowdefeatData.defeat , lastdefeatData.defeat );
+//         let defeatHb = calculation(nowdefeatData.defeat , lastdefeatData.defeat );
+//         let defeatParams = numberFormat(nowdefeatData.defeat);
+//         this.defeatData = {
+//                value: defeatParams.value ,
+//                unit: defeatParams.unit,
+//                tb: defeatTb,
+//                hb: defeatHb
+//               //  aims: '',
+//               //  finished: ''
+//            };
+//       }
 
-  }
+//   }
 
-  if (this.time.key === 'month' || this.time.key === 'threemonth' || this.time.key === 'week' || this.time.key === 'day' ||  this.time.key === 'last_month') {
-      if (!olddefeatData) {
-        let defeatTb = '';
-        let defeatHb = calculation(nowdefeatData.defeat , lastdefeatData.defeat);
-        let defeatParams = numberFormat(nowdefeatData.defeat);
-        this.defeatData = {
-               value: defeatParams.value ,
-               unit: defeatParams.unit,
-               tb: defeatTb,
-               hb: defeatHb
-              //  aims: '',
-              //  finished: ''
-           };
-      } else if (!lastdefeatData) {
-        let defeatTb = calculation(nowdefeatData.defeat , olddefeatData.defeat);
-        let defeatHb = '';
-        let defeatParams = numberFormat(nowdefeatData.defeat);
-        this.defeatData = {
-               value: defeatParams.value ,
-               unit: defeatParams.unit,
-               tb: defeatTb,
-               hb: defeatHb
-              //  aims: '',
-              //  finished: ''
-           };
-      } else {
-        let defeatTb = calculation(nowdefeatData.defeat , olddefeatData.defeat);
-        let defeatHb = calculation(nowdefeatData.defeat , lastdefeatData.defeat);
-        let defeatParams = numberFormat(nowdefeatData.defeat);
-        this.defeatData = {
-               value: defeatParams.value ,
-               unit: defeatParams.unit,
-               tb: defeatTb,
-               hb: defeatHb
-              //  aims: '',
-              //  finished: ''
-           };
-      }
-  }
+//   if (this.time.key === 'month' || this.time.key === 'threemonth' || this.time.key === 'week' || this.time.key === 'day' ||  this.time.key === 'last_month') {
+//       if (!olddefeatData) {
+//         let defeatTb = '';
+//         let defeatHb = calculation(nowdefeatData.defeat , lastdefeatData.defeat);
+//         let defeatParams = numberFormat(nowdefeatData.defeat);
+//         this.defeatData = {
+//                value: defeatParams.value ,
+//                unit: defeatParams.unit,
+//                tb: defeatTb,
+//                hb: defeatHb
+//               //  aims: '',
+//               //  finished: ''
+//            };
+//       } else if (!lastdefeatData) {
+//         let defeatTb = calculation(nowdefeatData.defeat , olddefeatData.defeat);
+//         let defeatHb = '';
+//         let defeatParams = numberFormat(nowdefeatData.defeat);
+//         this.defeatData = {
+//                value: defeatParams.value ,
+//                unit: defeatParams.unit,
+//                tb: defeatTb,
+//                hb: defeatHb
+//               //  aims: '',
+//               //  finished: ''
+//            };
+//       } else {
+//         let defeatTb = calculation(nowdefeatData.defeat , olddefeatData.defeat);
+//         let defeatHb = calculation(nowdefeatData.defeat , lastdefeatData.defeat);
+//         let defeatParams = numberFormat(nowdefeatData.defeat);
+//         this.defeatData = {
+//                value: defeatParams.value ,
+//                unit: defeatParams.unit,
+//                tb: defeatTb,
+//                hb: defeatHb
+//               //  aims: '',
+//               //  finished: ''
+//            };
+//       }
+//   }
  
- if (this.time.key === 'all') {
-        let defeatTb = '';
-        let defeatHb = '';
-        let defeatParams = numberFormat(nowdefeatData.defeat);
-        this.defeatData = {
-               value: defeatParams.value ,
-               unit: defeatParams.unit,
-               tb: defeatTb,
-               hb: defeatHb
-              //  aims: '',
-              //  finished: ''
-           };
- }
+//  if (this.time.key === 'all') {
+//         let defeatTb = '';
+//         let defeatHb = '';
+//         let defeatParams = numberFormat(nowdefeatData.defeat);
+//         this.defeatData = {
+//                value: defeatParams.value ,
+//                unit: defeatParams.unit,
+//                tb: defeatTb,
+//                hb: defeatHb
+//               //  aims: '',
+//               //  finished: ''
+//            };
+//  }
       // console.log(olddefeatData , nowdefeatData);
   })
   .catch((e: any) => {
@@ -1862,6 +2028,10 @@ async getConverforsalesData() {
       brandId: this.brandId,
       rfsCodes: this.checkedArea.toString(),
       seriesIds: this.series.toString()
+    };
+
+    let search = {
+        module: '订单'
     };
 
   if ( this.checkedArea.length === $commonData.areaData.getAreaMap().length || this.checkedArea.length === 0 ) {
@@ -1900,12 +2070,32 @@ async getConverforsalesData() {
         aim = '';
     }
 
+
+    const returnValue = await $api.DashboardApi.configuration(search);
+    const actualData = returnValue.datas[0];
+    console.log(actualData , '订单报警值');
+    
+
 $api.DashboardApi.order(params).then((res: any) => {
-    console.log(res, '订单');
+    // console.log(res, '订单');
     let oldConverforsales = res.lsatYear[0];
     let nowConverforsales = res.now[0];
     let lastConverforsales = res.last[0];
     this.cardData = this.dealWithOrder(nowConverforsales , oldConverforsales , lastConverforsales , aim);
+    // console.log(this.cardData , '订单数据');
+
+      if (actualData) {
+         this.tbcardColor = decideColor( this.cardData.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle , actualData.lastAlarmCycleSymbol);
+         this.hbcardColor = decideColor(this.cardData.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle , actualData.ringAlarmCycleSymbol);
+         this.aimscardColor = decideColor(this.cardData.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle , actualData.kpiAlarmCycleSymbol);
+        //  console.log(this.tbcardColor , this.hbcardColor ,  this.aimscardColor , '颜色值');
+      } else {
+        this.tbcardColor = 0;
+        this.hbcardColor = 0;
+        this.aimscardColor = 0;
+      }
+
+    
 
   } )
   .catch(e => {
@@ -1923,24 +2113,58 @@ $api.DashboardApi.order(params).then((res: any) => {
 }
 
 //传播api数据
-getspreadData() {
+async getspreadData() {
     let params = {
       brandId: this.brandId,
       type: this.time.key,
       rfsCodes: this.checkedArea.toString(),
       seriesIds: this.series.toString()
   };
+
+    let search = {
+      module: '兴趣'
+    };
     if ( this.checkedArea.length === $commonData.areaData.getAreaMap().length ) {
       delete params.rfsCodes;
     }
-  $api.DashboardApi.spreadData(params).then((res: any) => {
+    let spreadKpi = await $api.DashboardApi.spreadKpi(params);
+    console.log(spreadKpi);
+    let aim: any;
+    if (spreadKpi.now[0]) {
+      aim = Number(spreadKpi.now[0].click);
+      aim = Math.round(aim);
+      console.log(aim , '兴趣目标');
+      
+    } else {
+      aim = '';
+    }
+
+    const returnValue = await $api.DashboardApi.configuration(search);
+    const actualData = returnValue.datas[0];
+    console.log(actualData , '兴趣配置');
+    
+
+    $api.DashboardApi.spreadData(params).then((res: any) => {
     console.log(res , '传播');
         let oldSpread = res.lsatYear[0];
         let nowSpread = res.now[0];
         let lastSpread = res.last[0];
         // console.log(oldSpread , nowSpread ,lastSpread);
 
-         this.propagationData = this.propagation(nowSpread , oldSpread , lastSpread);
+         this.propagationData = this.propagation(nowSpread , oldSpread , lastSpread , aim);
+
+        if (actualData) {
+         this.tbpropColor = decideColor( this.propagationData.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+         this.hbpropColor = decideColor(this.propagationData.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+         this.aimpropColor = decideColor(this.propagationData.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+        //  console.log(this.tbcardColor , this.hbcardColor ,  this.aimscardColor , '颜色值');
+      } else {
+        this.tbpropColor = 0;
+        this.hbpropColor = 0;
+        this.aimpropColor = 0;
+      }
+
+
   })
   .catch(e => {
   this.propagationData = {
@@ -1969,6 +2193,10 @@ async getToshopData() {
   rfsCodes: this.checkedArea.toString(),
   seriesIds: this.series.toString()
 };
+
+  let search = {
+    module: '到店'
+  };
       if ( this.checkedArea.length === $commonData.areaData.getAreaMap().length ) {
       delete params.rfsCodes;
       delete aimsList.rfsCodes;
@@ -2002,6 +2230,11 @@ async getToshopData() {
   } else {
     aim = '';
   }
+
+    const returnValue = await $api.DashboardApi.configuration(search);
+    const actualData = returnValue.datas[0];
+    console.log(actualData , '到店预警值');
+    
   $api.DashboardApi.ToshopData(params).then((res: any) => {
     // console.log(res , '到店');
     
@@ -2012,177 +2245,21 @@ async getToshopData() {
     //上个月份的数据
     let lastTOshopData = res.last[0];
     this.rwtoShopData = this.dealWithShop(nowTOshopData , oldTOshopData , lastTOshopData , aim);
-    // if ( !nowTOshopData ) {
-    //       this.rwtoShopData = {
-    //               value: '',
-    //               unit: '',
-    //               tb: '',
-    //               hb: '',
-    //               aims: '',
-    //               finished:  '',
-    //               average: '',
-    //               offlineAverage: ''
-    //             };
-    //             return;
-    //   }
-    // // console.log(oldTOshopData , nowTOshopData , lastTOshopData);
-    // if (this.time.key === 'year') {
-    //     if (!lastTOshopData && nowTOshopData) {
-    //   let toshopTb = '';
-    //   let toshopHb = '';
-    //   let toshopParams = numberFormat(nowTOshopData.visitsNums);
-    //   let toShopAverage: any = nowTOshopData.onlineCycle / nowTOshopData.visitsNums;
-    //       toShopAverage =  toShopAverage.toFixed(2);
-    //   let toShopOfflineAverage: any = nowTOshopData.offlineCycle / nowTOshopData.visitsNums;
-    //       toShopOfflineAverage =  toShopOfflineAverage.toFixed(2);
-    //  this.rwtoShopData = {
-    //               value: toshopParams.value,
-    //               unit: toshopParams.unit,
-    //               tb: toshopTb,
-    //               hb: toshopHb,
-    //               aims: '',
-    //               finished:  '',
-    //               average: toShopAverage,
-    //               offlineAverage: toShopOfflineAverage
-    //             };
-    //   } else {
-    //   let toshopTb = calculation(nowTOshopData.visitsNums , lastTOshopData.visitsNums );
-    //   let toshopHb = calculation(nowTOshopData.visitsNums , lastTOshopData.visitsNums);
-    //   let toshopParams = numberFormat(nowTOshopData.visitsNums);
-    //   let toShopAverage: any = nowTOshopData.onlineCycle / nowTOshopData.visitsNums;
-    //       toShopAverage =  toShopAverage.toFixed(2);
-    //   let toShopOfflineAverage: any = nowTOshopData.offlineCycle / nowTOshopData.visitsNums;
-    //       toShopOfflineAverage =  toShopOfflineAverage.toFixed(2);
-    //             this.rwtoShopData = {
-    //               value: toshopParams.value,
-    //               unit: toshopParams.unit,
-    //               tb: toshopTb,
-    //               hb: toshopHb,
-    //               aims: '',
-    //               finished:  '',
-    //               average: toShopAverage,
-    //               offlineAverage: toShopOfflineAverage
-    //             };
-    //   }
+    console.log(this.rwtoShopData , '到店');
 
+      if (actualData) {
+         this.tbrwtoShopColor = decideColor( this.rwtoShopData.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+         this.hbrwtoShopColor = decideColor(this.rwtoShopData.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle , actualData.ringAlarmCycleSymbol);
+         this.aimrwtoShopColor = decideColor(this.rwtoShopData.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+         console.log(this.tbrwtoShopColor , this.hbrwtoShopColor , this.aimrwtoShopColor , '到店color');
+         
+      } else {
+        this.tbrwtoShopColor = 0;
+        this.hbrwtoShopColor = 0;
+        this.aimrwtoShopColor = 0;
 
-    // }
-
-    // if (this.time.key === 'month'  ||  this.time.key === 'threemonth' || this.time.key === 'day' || this.time.key === 'week') {
-    //       if (!oldTOshopData) {
-    //   let toshopTb = '';
-    //   let toshopHb = calculation(nowTOshopData.visitsNums , lastTOshopData.visitsNums);
-    //   let toshopParams = numberFormat(nowTOshopData.visitsNums);
-    //   let toShopAverage: any = nowTOshopData.onlineCycle / nowTOshopData.visitsNums;
-    //       toShopAverage =  toShopAverage.toFixed(2);
-    //   let toShopOfflineAverage: any = nowTOshopData.offlineCycle / nowTOshopData.visitsNums;
-    //       toShopOfflineAverage =  toShopOfflineAverage.toFixed(2);
-    //             this.rwtoShopData = {
-    //               value: toshopParams.value,
-    //               unit: toshopParams.unit,
-    //               tb: toshopTb,
-    //               hb: toshopHb,
-    //               aims: '',
-    //               finished:  '',
-    //               average: toShopAverage,
-    //               offlineAverage: toShopOfflineAverage
-    //             };
-    //       }
-    //       else if (!lastTOshopData) {
-    //              let toshopTb = calculation(nowTOshopData.visitsNums , oldTOshopData.visitsNums);
-    //              let toshopHb = '';
-    //              let toshopParams = numberFormat(nowTOshopData.visitsNums);
-    //              let toShopAverage: any = nowTOshopData.onlineCycle / nowTOshopData.visitsNums;
-    //                  toShopAverage =  toShopAverage.toFixed(2);
-    //              let toShopOfflineAverage: any = nowTOshopData.offlineCycle / nowTOshopData.visitsNums;
-    //                  toShopOfflineAverage =  toShopOfflineAverage.toFixed(2);
-    //                 this.rwtoShopData = {
-    //                   value: toshopParams.value,
-    //                   unit: toshopParams.unit,
-    //                   tb: toshopTb,
-    //                   hb: toshopHb,
-    //                   aims: '',
-    //                   finished:  '',
-    //                   average: toShopAverage,
-    //                   offlineAverage: toShopOfflineAverage
-    //                  };
-    //       }
-    //       else if (!lastTOshopData && !oldTOshopData) {
-    //              let toshopTb = '';
-    //              let toshopHb = '';
-    //              let toshopParams = numberFormat(nowTOshopData.visitsNums);
-    //              let toShopAverage: any = nowTOshopData.onlineCycle / nowTOshopData.visitsNums;
-    //                  toShopAverage =  toShopAverage.toFixed(2);
-    //              let toShopOfflineAverage: any = nowTOshopData.offlineCycle / nowTOshopData.visitsNums;
-    //                  toShopOfflineAverage =  toShopOfflineAverage.toFixed(2);
-    //                 this.rwtoShopData = {
-    //                   value: toshopParams.value,
-    //                   unit: toshopParams.unit,
-    //                   tb: toshopTb,
-    //                   hb: toshopHb,
-    //                   aims: '',
-    //                   finished:  '',
-    //                   average: toShopAverage,
-    //                   offlineAverage: toShopOfflineAverage
-    //                  };
-    //       } else {
-    //         // console.log(111);
-    //              let toshopTb = calculation(nowTOshopData.visitsNums , oldTOshopData.visitsNums);
-    //              let toshopHb = calculation(nowTOshopData.visitsNums , lastTOshopData.visitsNums);
-    //              let toshopParams = numberFormat(nowTOshopData.visitsNums);
-    //              let toShopAverage: any = nowTOshopData.onlineCycle / nowTOshopData.visitsNums;
-    //                  toShopAverage =  toShopAverage.toFixed(2);
-    //              let toShopOfflineAverage: any = nowTOshopData.offlineCycle / nowTOshopData.visitsNums;
-    //                  toShopOfflineAverage =  toShopOfflineAverage.toFixed(2);
-    //                 this.rwtoShopData = {
-    //                   value: toshopParams.value,
-    //                   unit: toshopParams.unit,
-    //                   tb: toshopTb,
-    //                   hb: toshopHb,
-    //                   aims: '',
-    //                   finished:  '',
-    //                   average: toShopAverage,
-    //                   offlineAverage: toShopOfflineAverage
-    //                  };
-    //       }
-
-    //   // nowTOshopData.sort((a: any , b: any) => {
-    //   // return a.month - b.month;
-    //   //   });
-
-
-    // }
-
-
-    // if (this.time.key === 'all') {
-    //   let toshopTb = '';
-    //   let toshopHb = '';
-    //   let toshopParams = numberFormat(nowTOshopData.visitsNums);
-    //       let toShopAverage: any = nowTOshopData.onlineCycle / nowTOshopData.visitsNums;
-    //           toShopAverage =  toShopAverage.toFixed(2);
-    //      let toShopOfflineAverage: any = nowTOshopData.offlineCycle / nowTOshopData.visitsNums;
-    //          toShopOfflineAverage =  toShopOfflineAverage.toFixed(2);
-    //             this.rwtoShopData = {
-    //               value: toshopParams.value,
-    //               unit: toshopParams.unit,
-    //               tb: toshopTb,
-    //               hb: toshopHb,
-    //               aims: '',
-    //               finished:  '',
-    //               average: toShopAverage,
-    //               offlineAverage: toShopOfflineAverage
-    //             };
-    // }
-
-    // if (this.time.key === 'week') {
-
-    // }
-    // nowTOshopData.sort((a: any , b: any) => {
-    //   return a.month - b.month;
-    // });
-
-
-    // console.log(oldTOshopData , nowTOshopData);
+      }
+    
 
   })
   .catch( e => {
@@ -2222,6 +2299,10 @@ async getAlldealData() {
       rfsCodes: this.checkedArea.toString(),
       seriesIds: this.series.toString()
     };
+  
+  let search = {
+    module: '成交'
+  };
 
   if ( this.checkedArea.length === $commonData.areaData.getAreaMap().length || this.checkedArea.length === 0 ) {
     delete params.rfsCodes;
@@ -2246,26 +2327,47 @@ async getAlldealData() {
 
   // console.log(seriesName , 'hahahah');
   aimsList.seriesIds = seriesName.toString();
-const data = await $api.DashboardApi.aimsData(aimsList);
+  const data = await $api.DashboardApi.aimsData(aimsList);
   // console.log(data , '成交目标');
   let aim: any;
   if (data.now[0]) {
     aim = Number(data.now[0].kpi);
     // aim = aim.toFixed(2);
     aim = Math.round(aim);
-    console.log(aim , '成交值');
+    // console.log(aim , '成交值');
   } else {
     aim = '';
   }
   let finished: string = '';
 
+    const returnValue = await $api.DashboardApi.configuration(search);
+    const actualData = returnValue.datas[0];
+
+    console.log(actualData , '成交配置');
+  
+
       $api.DashboardApi.AlldealData(params).then((res: any) => {
-        console.log(res , '总成交用户数');
+        // console.log(res , '总成交用户数');
 
         let oldAlldeal = res.lsatYear[0];
         let nowAlldeal = res.now[0];
         let lastAlldeal = res.last[0];
         this.allDealData = this.dealWithAlldeal(nowAlldeal , oldAlldeal , lastAlldeal, aim);
+        // console.log(this.allDealData , '总成交用户');
+
+        if (actualData) {
+         this.tballDealColor = decideColor( this.allDealData.tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+         this.hballDealColor = decideColor(this.allDealData.hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+         this.aimallDealColor = decideColor(this.allDealData.finished , actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+         console.log(this.tballDealColor , this.hballDealColor ,  this.aimallDealColor , '总成交颜色值');
+      } else {
+        this.tballDealColor = 0;
+        this.hballDealColor = 0;
+        this.aimallDealColor = 0;
+      }
+
+
+        
       })
       .catch(e => {
          this.allDealData = {
@@ -2547,7 +2649,7 @@ const data = await $api.DashboardApi.aimsData(aimsList);
   }
 
   //传播数据处理
-  propagation(now: any , old: any , last: any) {
+  propagation(now: any , old: any , last: any , aim: number) {
     let publics = {
         value: '',
         unit: '',
@@ -2556,13 +2658,23 @@ const data = await $api.DashboardApi.aimsData(aimsList);
         aims: '',
         finished: ''
     };
+    if (aim !== -9999) {
+      let aimUnit = numberFormat(aim);
+      publics.aims = `${aimUnit.value}${aimUnit.unit}`;
+    }
     if (!now) {
+      if (aim !== -9999) {
+        publics.finished = '0%';
+      }
       return publics;
     } else {
       let nowVisitors = now.newVisitors + now.oldVisitors;
       let params = numberFormat(nowVisitors);
       publics.value = params.value;
       publics.unit = params.unit;
+      if (aim !== -9999 ) {
+        publics.finished = finishingRate(nowVisitors , aim);
+      }
     }
 
     if (!old) {
@@ -2580,7 +2692,7 @@ const data = await $api.DashboardApi.aimsData(aimsList);
       let lastVisitors = last.newVisitors + last.oldVisitors;
         if (this.time.key === 'year') {
           publics.hb = publics.tb = calculation(nowVisitors , lastVisitors);
-          console.log(111);
+          // console.log(111);
         }  else if (this.time.key === 'all') {
           publics.hb = publics.tb = '';
         }
@@ -2619,12 +2731,18 @@ const data = await $api.DashboardApi.aimsData(aimsList);
       let params = numberFormat(now.num);
       publics.value = params.value;
       publics.unit = params.unit;
+      if (now.custNum) {
         let average: any = now.onlineCycle / now.custNum;
             average = average.toFixed(2);
         let offlineAverage: any = now.offlineCycle / now.custNum;
             offlineAverage = offlineAverage.toFixed(2);
       publics.average = average;
       publics.offlineAverage = offlineAverage;
+      } else {
+      publics.average = '';
+      publics.offlineAverage = '';
+      }
+
       if ( aim !== -9999 ) {
         publics.finished = finishingRate(now.num, aim);
       }
@@ -2655,6 +2773,8 @@ const data = await $api.DashboardApi.aimsData(aimsList);
 
   //订单数据处理
     dealWithOrder(now: any , old: any , last: any, aim: number) {
+
+
       let publics = {
             value: '',
             unit: '',
@@ -2703,6 +2823,42 @@ const data = await $api.DashboardApi.aimsData(aimsList);
     }
 
     return publics;
+  }
+
+  //战败数据处理
+  dealwithDefeat(now: any , old: any , last: any) {
+    let publics = {
+        value: '',
+        unit: '',
+        tb: '',
+        hb: ''
+    };
+    if (!now) {
+      return publics;
+    } else {
+      let params = numberFormat(now.defeat);
+          publics.value = params.value;
+          publics.unit = params.unit;
+    }
+    if (!old) {
+      publics.tb = '';
+    } else {
+      publics.tb = calculation(now.defeat , old.defeat);
+    }
+
+    if (!last) {
+      publics.hb = '';
+    } else {
+      if (this.time.key === 'year') {
+        publics.hb = publics.tb = calculation(now.defeat , last.defeat);
+      } else if (this.time.key === 'all') {
+        publics.hb = publics.tb = '';
+      } else {
+        publics.hb = calculation(now.defeat , last.defeat);
+      }
+    }
+
+      return publics;
   }
 
   //到店数据处理
@@ -2757,6 +2913,8 @@ const data = await $api.DashboardApi.aimsData(aimsList);
     return publics;
   }
 
+
+
   jump() {
     if (window.location.hostname === 'marketingkpi-qa-pv.saicmotortest.com') {
       window.open('http://10.129.145.54:8180/WebReport/decision/view/form?viewlet=%25E8%2590%25A5%25E9%2594%2580%25E9%2597%25AD%25E7%258E%25AF%252F%25E8%2590%25A5%25E9%2594%2580%25E9%2597%25AD%25E7%258E%25AF%25E7%259C%258B%25E6%259D%25BF.frm&ref_t=design&ref_c=9a0cd63b-0594-4b1f-b8a2-b2b0a5d57d89');
@@ -2766,9 +2924,13 @@ const data = await $api.DashboardApi.aimsData(aimsList);
   }
 
   marketJump() {
-    window.open('https://dscbi-pv.saicmotor.com/webroot/decision/v5/design/report/share/a43d1805fb904c59a45dd0b9df2e7eb2?link=eyJhbGciOiJIUzI1NiJ9.eyJyZXBvcnRJZCI6ImE0M2QxODA1ZmI5MDRjNTlhNDVkZDBiOWRmMmU3ZWIyIiwidXNlcklkIjoiNzMwZTdjMWYtZTE5NS00NzBhLWIyNmYtYWFkMTA1MjI5ODY0IiwianRpIjoiand0In0.fzUiXBtzdIu1hWXAlJ55EnSYpu6hXyOS63UXweSFNkc');
+    window.open('http://dscbi-pv.saicmotor.com/webroot/decision/v5/design/report/share/6e1ea7f538d5426bacc55a3c11b63d0f?link=eyJhbGciOiJIUzI1NiJ9.eyJyZXBvcnRJZCI6IjZlMWVhN2Y1MzhkNTQyNmJhY2M1NWEzYzExYjYzZDBmIiwidXNlcklkIjoiYjVmMGMyZWUtNjQwZi00MDM5LWE0ZDQtOTE4YjU1MzU0ODk4IiwianRpIjoiand0In0.oQtWXO-t0rey4pfcV6z-0tzOcVtRiY_uLFUPdebj5hI');
   }
 
+  
+  detailsIcon() {
+    window.open('http://finereport-pv.saicmotor.com/WebReport/decision/view/form?viewlet=COUPON_DETAIL%252FDetail_view.frm&ref_t=design&ref_c=69157e45-54b2-4b05-b898-44e92cd358e0');
+  }
   //第一方触点柱状图数据
   contactEchart() {
     let o = this.contactLevel.oLevel;
@@ -2817,6 +2979,15 @@ const data = await $api.DashboardApi.aimsData(aimsList);
           right: 0
          },
          series: [
+          {
+            name: '目标',
+            type: 'bar',
+            // barWidth: '100%',
+            data: [aim],
+            itemStyle: {
+              normal: { color: '#236BB4' }
+            }
+          },
           {
             name: '已下单',
             type: 'bar',
@@ -2875,15 +3046,6 @@ const data = await $api.DashboardApi.aimsData(aimsList);
             data: [n],
             itemStyle: {
               normal: { color: '#F27A7A' }
-            }
-          },
-          {
-            name: '目标',
-            type: 'bar',
-            // barWidth: '100%',
-            data: [aim],
-            itemStyle: {
-              normal: { color: '#236BB4' }
             }
           }
         ]
@@ -2942,6 +3104,15 @@ const data = await $api.DashboardApi.aimsData(aimsList);
          },
          series: [
           {
+            name: '目标',
+            type: 'bar',
+            // barWidth: '100%',
+            data: [aim],
+            itemStyle: {
+              normal: { color: '#236BB4' }
+            }
+          },
+          {
             name: '已下单',
             type: 'bar',
             stack: '广告',
@@ -2999,15 +3170,6 @@ const data = await $api.DashboardApi.aimsData(aimsList);
             data: [n],
             itemStyle: {
               normal: { color: '#F27A7A' }
-            }
-          },
-          {
-            name: '目标',
-            type: 'bar',
-            // barWidth: '100%',
-            data: [aim],
-            itemStyle: {
-              normal: { color: '#236BB4' }
             }
           }
         ]
@@ -3065,6 +3227,15 @@ const data = await $api.DashboardApi.aimsData(aimsList);
           right: 0
          },
          series: [
+            {
+            name: '目标',
+            type: 'bar',
+            // barWidth: '100%',
+            data: [aim],
+            itemStyle: {
+              normal: { color: '#236BB4' }
+            }
+          },
           {
             name: '已下单',
             type: 'bar',
@@ -3123,15 +3294,6 @@ const data = await $api.DashboardApi.aimsData(aimsList);
             data: [n],
             itemStyle: {
               normal: { color: '#F27A7A' }
-            }
-          },
-          {
-            name: '目标',
-            type: 'bar',
-            // barWidth: '100%',
-            data: [aim],
-            itemStyle: {
-              normal: { color: '#236BB4' }
             }
           }
         ]
@@ -3191,6 +3353,15 @@ const data = await $api.DashboardApi.aimsData(aimsList);
          },
          series: [
           {
+            name: '目标',
+            type: 'bar',
+            // barWidth: '100%',
+            data: [aim],
+            itemStyle: {
+              normal: { color: '#236BB4' }
+            }
+          },
+          {
             name: '已下单',
             type: 'bar',
             stack: '广告',
@@ -3248,15 +3419,6 @@ const data = await $api.DashboardApi.aimsData(aimsList);
             data: [n],
             itemStyle: {
               normal: { color: '#F27A7A' }
-            }
-          },
-          {
-            name: '目标',
-            type: 'bar',
-            // barWidth: '100%',
-            data: [aim],
-            itemStyle: {
-              normal: { color: '#236BB4' }
             }
           }
         ]
@@ -4060,7 +4222,7 @@ this.changeDefeatedModal = false;
                             width: 1694px;
                             height: 100%;
                             padding-top: 28px;
-                            padding-left: 390px;
+                            padding-left: 90px;
 
                               .propagationTitle{
                                 height:44px;
@@ -4107,6 +4269,14 @@ this.changeDefeatedModal = false;
                                       .propagationaimsValue{
                                         color: $color-white-opacity;
                                         padding-right: 16px;
+                                        font-size: 32px;
+                                        font-weight: 700;
+                                      }
+
+                                      .actualStyle{
+                                        // color: #ffffff;
+                                        font-size: 32px;
+                                        font-weight: 700;
                                       }
 
                                   }
@@ -4207,6 +4377,7 @@ this.changeDefeatedModal = false;
                             margin-right: 20px;
                             padding-top: 86px;
                             padding-left: 100px;
+                            position: relative;
                                 .contactContent{
                                   font-size: 24px;
                                   color:rgba(255,255,255,1);
@@ -4258,6 +4429,14 @@ this.changeDefeatedModal = false;
                                 height: 100%;
                                 margin-left: 8px;
                                 background-color: #236BB4;
+                              }
+                              img{
+                                width: 40px;
+                                height: 50px;
+                                position: absolute;
+                                top: 20px;
+                                left: 30px;
+                                cursor:pointer;
                               }
                           }
 
@@ -4370,6 +4549,10 @@ this.changeDefeatedModal = false;
                   background:rgba(35,107,180,1);
                   border-radius:16px;
                   border:3px solid rgba(58,66,99,1);
+                  .intentionIcon{
+                    margin-right: 10px;
+                    font-size: 30px;
+                  }
                 }
                   .clueAllocationTitle{
                     font-size: 34px;
@@ -4613,6 +4796,16 @@ this.changeDefeatedModal = false;
                   top: 0;
                   left: -100px;
                 }
+                .crowd{
+                    position: absolute;
+                    top: 20px;
+                    right: 60px;
+                    color: #236BB4;
+                    font-size: 56px;
+                    z-index: 10;    
+                    cursor: pointer;
+
+                  }
               }
               .notPaddingleft{
                 padding-left: 0;  
@@ -4696,13 +4889,18 @@ this.changeDefeatedModal = false;
                 bottom: 0;
                 top: 0;
                 margin: auto;
-                width: 220px;
+                width: 240px;
                 height: 80px;
                 font-size: 28px;
                 background: #236bb4;
                 border-radius: 16px;
                 border: 3px solid #3a4263;
-                left: 73px;                 
+                left: 73px;  
+
+                .analysisIcon{
+                  margin-right: 10px;
+                  font-size: 30px;
+                }               
               }
               .dealTb{
                 display: flex;
@@ -4937,13 +5135,6 @@ this.changeDefeatedModal = false;
             width: 160px;
             display: block;
           }
-          .green{
-            color:#35E967
-          }
-
-          .red{
-            color: #E80404;
-           }
 
           .publictextStyle{
             height: 40px;
@@ -5014,69 +5205,69 @@ this.changeDefeatedModal = false;
           }
       }
       
-      .ntmodalContent{
-        width: 100%;
-        height: 1692px;
+      // .ntmodalContent{
+      //   width: 100%;
+      //   height: 1692px;
 
-          .ntmodalDistributed{
-            width: 100%;
-            height: 676px;
-            // background-color: pink;
-            margin-top: 40px;
-            display: flex;
+      //     .ntmodalDistributed{
+      //       width: 100%;
+      //       height: 676px;
+      //       // background-color: pink;
+      //       margin-top: 40px;
+      //       display: flex;
 
-             .cycle{
-                width: 2050px;
-                height: 100%;
-                background-color: #021722;
-                margin-right: 20px;
+      //        .cycle{
+      //           width: 2050px;
+      //           height: 100%;
+      //           background-color: #021722;
+      //           margin-right: 20px;
 
-                  .cycleTitle{
-                     width: 100%;
-                     height: 100px;
-                     border-bottom: 2px solid #0B4D5E;
-                     line-height: 100px;
-                     color: #FFFFFF;
-                     font-size: 36px;
-                     padding-left: 40px;
-                  }
+      //             .cycleTitle{
+      //                width: 100%;
+      //                height: 100px;
+      //                border-bottom: 2px solid #0B4D5E;
+      //                line-height: 100px;
+      //                color: #FFFFFF;
+      //                font-size: 36px;
+      //                padding-left: 40px;
+      //             }
               
-                 .ntmodalEcharts{
-                   width: 100%;
-                   height: calc(100% - 100px);
-                  //  background-color: #fff;
-                 }
-             }
-             .distributed{
-               flex: 1;
-               height: 100%;
-               background-color: #021722;
+      //            .ntmodalEcharts{
+      //              width: 100%;
+      //              height: calc(100% - 100px);
+      //             //  background-color: #fff;
+      //            }
+      //        }
+      //        .distributed{
+      //          flex: 1;
+      //          height: 100%;
+      //          background-color: #021722;
 
-                  .distributedTitle{
-                    width: 100%;
-                    height: 100px;
-                    border-bottom: 2px solid #0B4D5E;
-                    line-height: 100px;
-                     color: #FFFFFF;
-                     font-size: 36px;
-                     padding-left: 40px;
-                  }
+      //             .distributedTitle{
+      //               width: 100%;
+      //               height: 100px;
+      //               border-bottom: 2px solid #0B4D5E;
+      //               line-height: 100px;
+      //                color: #FFFFFF;
+      //                font-size: 36px;
+      //                padding-left: 40px;
+      //             }
 
-                  .distributedEcharts{
-                    width: 100%;
-                    height: calc(100% - 100px);
+      //             .distributedEcharts{
+      //               width: 100%;
+      //               height: calc(100% - 100px);
 
-                  }
-             }
-          }
+      //             }
+      //        }
+      //     }
 
-          .ntmodalPortrait{
-            width: 100%;
-            height: 916px;
-            background-color: #021722;
-            margin-top: 20px;
-          }
-      }
+      //     .ntmodalPortrait{
+      //       width: 100%;
+      //       height: 916px;
+      //       background-color: #021722;
+      //       margin-top: 20px;
+      //     }
+      // }
       //element-ui的样式
       .el-dialog{
         background-color: $box-bg-primary;
@@ -5109,6 +5300,19 @@ this.changeDefeatedModal = false;
     font-size: 32px;
     font-weight: 700;
   }
+    .green{
+      color:#56D884;
+    }
+    .red{
+      color: #FF7176;
+    }
+    .yellow {
+      color: #FFC72F;
+    }
+     .white {
+       color: #ffffff;
+     }
+
 
     }
 </style>

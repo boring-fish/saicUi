@@ -37,11 +37,10 @@ export function numberFormat(value: any) {
    sizes = ['' , '万', '亿', '万亿'],
    i;
    if (value < k) {
-       param.value = value;
+       param.value = Math.floor(value) === Number(value) ? value : Number(value).toFixed(2);
        param.unit = '';
    } else {
        i = Math.floor(Math.log(value) / Math.log(k)); 
- 
        param.value = ((value / Math.pow(k, i))).toFixed(2);
        param.unit = sizes[i];
    }
@@ -157,6 +156,26 @@ export function  combineArr( arr: object[], attribute: string = 'name', combineA
     return pre;
   }, []);
 }
+
+/**
+ * @method getPercent
+ * @description 获取百分比，不带%,保留round位小数
+ * @param {curNum: number, totalNum: number, round: number = 0}
+ * @return string
+ * @author qian.wan
+ * 
+ */
+export function getPercent(curNum: number, totalNum: number, round: number = 0, unit: boolean = false ): string {
+    if (isNaN(curNum) || isNaN(totalNum) || totalNum === 0) {
+        return '';
+    }
+
+    const result = Math.round(curNum / totalNum * 100 * (10 ** round)) / ( 10 ** round);
+    return unit ? ( result + '%' ) : ( result + '' );
+}
+
+
+
 export function seriesdataToMap(arr: any[]) {
   if (!arr || !arr.length) {
     return {};
@@ -202,4 +221,71 @@ export function dateFormat(date: any, format: string = 'yyyy-MM-dd HH:mm:ss') {
       }
   }
   return format;
+}
+
+export const saveLocal = (key: string, data: any) => {
+  localStorage.setItem(key, JSON.stringify(data));
+};
+
+export const getLocal = (key: string) => {
+  let data = localStorage.getItem(key);
+  if (!data || data === 'undefined') {
+    return null;
+  } else {
+    return JSON.parse(data);
+  }
+};
+
+export const saveSession = (key: string, data: any) => {
+  sessionStorage.setItem(key, JSON.stringify(data));
+};
+
+export const getSession = (key: string) => {
+  let data = sessionStorage.getItem(key);
+  if (!data || data === 'undefined') {
+    return null;
+  } else {
+    return JSON.parse(data);
+  }
+};
+
+/**
+ * @method decideColor
+ * @description 
+ * @param {actual: any, AlarmCycle: any, round: EarlyWarCycle: any}
+ * @return 0 白色 1 红 2 黄 3 绿色
+ * @author qi.chen
+ */
+export function decideColor(actual: any ,  AlarmCycle: any , EarlyWarCycle: any , symbol: any = '高于') {
+  // let alarm = AlarmCycle * 100;
+  // let earlWarLeft = EarlyWarCycle.split(',')[0] * 100;
+  // let earlWarRight = EarlyWarCycle.split(',')[1] * 100;
+  // let value = Number(actual.split('%')[0]);
+  // console.log(value , alarm , earlWarLeft , earlWarRight , '计算的值');
+  if (!actual || !AlarmCycle || !EarlyWarCycle) {
+    return 0;
+  } else {
+    let alarm = AlarmCycle * 100;
+    let earlWarLeft = EarlyWarCycle.split(',')[0] * 100;
+    let earlWarRight = EarlyWarCycle.split(',')[1] * 100;
+    let value = Number(actual.split('%')[0]);
+
+    if (symbol === '高于') {
+      if (value > alarm) {
+        return 1;
+      } else if (value >= earlWarLeft && value <= earlWarRight) {
+        return 2;
+      } else {
+        return 3;
+      }
+    } else {
+      if (value < alarm) {
+        return 1;
+      } else if (value >= earlWarLeft && value <= earlWarRight) {
+        return 2;
+      } else {
+        return 3;
+      }
+    }
+  }
 }

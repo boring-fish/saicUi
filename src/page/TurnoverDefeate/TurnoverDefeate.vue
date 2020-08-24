@@ -1,6 +1,6 @@
 /**
   * @description: 成交战败详情
-  * @author: qian.wan
+  * @author: 
   * @date: 
   */
 <template>
@@ -22,7 +22,7 @@
         <div><span class="overview-theme-number">{{item.value? item.value : '——'}}</span>{{item.unit}}</div>
         <div>
           同比
-            <span v-if="item.tb && item.name === '成交'" :class="(item.tb).startsWith('-') ? 'overview-theme-chain' : 'overview-theme-year'"> 
+            <span v-if="item.tb && item.name === '成交'" :class="tbdealColor === 1 ? 'overview-theme-chain' : tbdealColor === 2 ? 'yellow' : tbdealColor === 3 ? 'overview-theme-year' : 'white' "> 
              <span class="iconfont iconxiajiang" v-if="(item.tb).startsWith('-')"></span>
              <span class="iconfont iconshangsheng" v-else></span>
              {{item.tb | negative}}
@@ -34,7 +34,7 @@
              </span>
              <span class="margin" v-else>—</span>
           环比
-            <span v-if="item.hb && item.name === '成交'" :class="(item.hb).startsWith('-') ? 'overview-theme-chain' : 'overview-theme-year'"> 
+            <span v-if="item.hb && item.name === '成交'" :class="hbdealColor === 1 ? 'overview-theme-chain' : hbdealColor === 2 ? 'yellow' : hbdealColor === 3 ? 'overview-theme-year' : 'white'"> 
              <span class="iconfont iconxiajiang" v-if="(item.hb).startsWith('-')"></span>
              <span class="iconfont iconshangsheng" v-else></span>
              {{item.hb | negative}}
@@ -56,7 +56,7 @@
         <div v-else class="overview-other-cycle">——</div>
         <div>同期比 
           <!-- <span class="overview-other-rate">{{item.rate? item.rate : '—'}}</span> -->
-        <span v-if="item.rate" class="margin" :class="(item.rate).startsWith('-') ? 'overview-theme-year' : 'overview-theme-chain'"> 
+        <span v-if="item.rate" class="margin" :class="item.color === 1 ? 'overview-theme-chain' : item.color === 2 ? 'yellow' : item.color === 3 ? 'overview-theme-year': 'white'"> 
              <span class="iconfont iconxiajiang" v-if="(item.rate).startsWith('-')"></span>
              <span class="iconfont iconshangsheng" v-else></span>
              {{item.rate | negative}}
@@ -85,12 +85,11 @@
             <div>
               <h4 class="list-agency">{{item.rfsName}}</h4>
               <span class="list-volume">{{activeTheme === '成交' ? item.num : item.defeat}}</span>
-              <!-- <span >目标完成率</span>
+              <span >目标完成率</span>
               <span 
-                class="list-rate" 
-                :class="{'list-rate-below': parseFloat(item.turnoverRate) < 80}">
-                —
-              </span> -->
+                class="list-rate" :class="item.colorValue === 1 ? 'red' : item.colorValue === 2 ? 'yellow' : item.colorValue === 3 ? 'green' : 'white'">
+                {{item.aim && activeTheme === '成交'  ? item.aim : '—'}}
+              </span>
             </div>
             
              </li>
@@ -123,6 +122,7 @@
             :data="channelData"
             :theme="activeTheme"
             :label="filterChannelLabel"
+            :dealValue="configurationValue"
             id="channel-bar" 
             v-show="changeShowEcharts"
             >
@@ -155,9 +155,10 @@
 import { Component, Vue , Emit, Prop, Watch} from 'vue-property-decorator';
 import { ChannelBar, DailyBar } from './index'; // 组件
 import { FilterButton, DatePicker } from '@/components/index'; // 组件
-import { calculation , numberFormat } from '@/utils/utils.ts';
+import { calculation , numberFormat , finishingRate , decideColor} from '@/utils/utils.ts';
 import moment from 'moment';
 import _ from 'lodash';
+import Login from '../Login/Login.vue';
 
 
 
@@ -225,14 +226,16 @@ export default class TurnoverDefeate extends Vue {
     tb: '',
     hb: ''
   }];
-  overViewOther: object[] = [{
+  overViewOther: any[] = [{
     name: '线上成交平均转化周期',
     cycle: '',
     rate: '',
+    color: 0
   }, {
     name: '线下成交平均转化周期',
     cycle: '',
     rate: '',
+    color: 0
   }];
   // list: object[] = [{
   //   img: '../../assets/img/portrait.jpg',
@@ -290,6 +293,16 @@ export default class TurnoverDefeate extends Vue {
   filterChannelLabel: string = '同比';
   channelData: object = {};
 
+  configurationValue: any = {};
+
+  //成交配置颜色
+  tbdealColor: number = 0;
+  hbdealColor: number = 0;
+
+  //线上成交周期颜色
+  // onlineColor: number = 0;
+  // offlineColor: number = 0;
+
   @Watch('brandName')
   brandNameChange() {
       this.onRuleChange();
@@ -322,7 +335,7 @@ export default class TurnoverDefeate extends Vue {
     }
     this.$emit('onMonthChange', this.timeMonth);
   }
-mounted() {
+ mounted() {
   // console.log(this.timeMonth);
   // console.log(this.brandId);
     if (Object.keys(this.currentArea)[0] === 'all') {
@@ -387,15 +400,30 @@ onChannelFilterChange(label: string) {
   this.filterChannelLabel = label;
 }
   //成交api数据
-  volumeData() {
+ async volumeData() {
     let params = {
       brandId: this.brandId,
       time: this.timeMonth
     };
 
+    let search = {
+     module: '成交'
+    };
     if (Object.keys(this.currentArea)[0] !== 'all') {
       params = Object.assign(params, this.currentArea);
     }
+
+    const returnValue = await $api.DashboardApi.configuration(search);
+    const actualData = returnValue.datas[0];
+
+    const onLine = await $api.DashboardApi.configuration({module: '线上成交平均转化周期'});
+    const onlineData = onLine.datas[0];
+    const Offline = await $api.DashboardApi.configuration({module: '线下成交平均转化周期'});
+    const offlineData = Offline.datas[0];
+    console.log(onLine , Offline , '线上 线下');
+    
+
+    console.log(actualData , '成交配置');
       $api.TurnoverDefeateApi.AlldealData(params).then((res: any) => {
           // console.log(res);
           let oldVolume = res.lsatYear[0];
@@ -405,6 +433,29 @@ onChannelFilterChange(label: string) {
         this.$set(this.overviewTheme , 0 , publics[0]);
         this.$set(this.overViewOther , 0 , publics[1]);
         this.$set(this.overViewOther , 1 , publics[2]);
+
+        if (actualData) {
+         this.tbdealColor = decideColor( this.overviewTheme[0].tb , actualData.lastAlarmCycle , actualData.lastEarlyWarCycle, actualData.lastAlarmCycleSymbol);
+         this.hbdealColor = decideColor(this.overviewTheme[0].hb , actualData.ringAlarmCycle , actualData.ringEarlyWarCycle, actualData.ringAlarmCycleSymbol);
+         console.log(this.tbdealColor , this.hbdealColor , '总成交颜色值');
+      } else {
+        this.tbdealColor = 0;
+        this.hbdealColor = 0;
+      }
+
+      if (onlineData) {
+        this.overViewOther[0].color = decideColor(this.overViewOther[0].rate , onlineData.lastAlarmCycle , onlineData.lastEarlyWarCycle, onlineData.lastAlarmCycleSymbol);
+        
+      } else {
+        this.overViewOther[0].color = 0;
+      }
+
+      if (offlineData) {
+        this.overViewOther[1].color = decideColor(this.overViewOther[1].rate , offlineData.lastAlarmCycle , offlineData.lastEarlyWarCycle, offlineData.lastAlarmCycleSymbol);
+      } else {
+        this.overViewOther[1].color = 0;
+      }
+
       })
       .catch(e => {
            this.overviewTheme = [{
@@ -475,7 +526,7 @@ onChannelFilterChange(label: string) {
 
  
   //渠道api数据
-  getsalesData() {
+  async getsalesData() {
   let params = {
     brandId: this.brandId,
     time: this.timeMonth,
@@ -487,9 +538,15 @@ onChannelFilterChange(label: string) {
       params = Object.assign(params, this.currentArea);
     }
   this.changeShowEcharts = false;
+    const returnValue = await $api.DashboardApi.configuration({module: '成交'});
+    const actualData = returnValue.datas[0];
   $api.TurnoverDefeateApi.channelData(params).then((res: any) => {
   this.changeShowEcharts = true;
-
+  if (actualData) {
+      this.configurationValue = actualData;
+  } else {
+      this.configurationValue = {};
+  }
     let newRes: any = {
       last: [],
       lsatYear: [],
@@ -515,7 +572,7 @@ onChannelFilterChange(label: string) {
   }
 
  //各地经销api数据
-  getchannelData() {
+  async getchannelData() {
   let params = {
     brandId: this.brandId,
     time: this.timeMonth,
@@ -527,6 +584,20 @@ onChannelFilterChange(label: string) {
       params = Object.assign(params, this.currentArea);
     }
 
+    let paramsAims = {
+      time: this.timeMonth,
+      brandId: this.brandId,
+      groups: 'rfsCode',
+      type: '成交'
+    };
+
+    let search = {
+      module: '成交'
+    };
+    const returnValue = await $api.DashboardApi.configuration(search);
+    const actualData = returnValue.datas[0];
+
+    // console.log(actualData , '成交配置');
     // return new Promise((res , rej) => {
     //    $api.TurnoverDefeateApi.channelData(params).then((data) => {
     //      res(data);
@@ -537,11 +608,45 @@ onChannelFilterChange(label: string) {
 
   $api.TurnoverDefeateApi.channelData(params).then((res: any) => {
     // console.log(res.now , 22222 );
-    console.log($commonData.areaData.getAreaList() , '名称');
+    // console.log($commonData.areaData.getAreaList() , '名称');
     // console.log(Object.keys(this.currentArea)[0] , 22222);
      this.list = [];
     if (Object.keys(this.currentArea)[0] === 'all') {
-    res.now.forEach((element: any) => {
+      $api.TurnoverDefeateApi.transformAim(paramsAims).then((info: any) => {
+        console.log(info, '成交目标值');
+        if (this.activeTheme === '成交') {
+        res.now.forEach((item: any) => {
+          info.now.forEach((element: any) => {
+            if (item.rfsCode === element.rfsCode) {
+              item.aim = finishingRate(item.num , element.kpi);
+              if (actualData) {
+                 item.colorValue = decideColor(item.aim, actualData.kpiAlarmCycle , actualData.kpiEarlyWarCycle, actualData.kpiAlarmCycleSymbol);
+                //  console.log(item.colorValue , 'color');
+                 
+              } else {
+                 item.colorValue = 0;
+              }
+              
+            }
+          });
+        });
+        
+
+        if (info.now.length !== 0) {
+            if (this.activeOrder === 'up') {
+            res.now.sort((a: any , b: any) => {
+                return a['aim'].split('%')[0] - b['aim'].split('%')[0];
+            });
+          } else {
+             res.now.sort((a: any , b: any) => {
+                return b['aim'].split('%')[0] - a['aim'].split('%')[0];
+            });
+          }
+        }
+        
+        }
+        
+      res.now.forEach((element: any) => {
        $commonData.areaData.getAreaList().forEach((item: any) => {
         if (element.rfsCode === item.rfsCode) {
             element.rfsName = item.rfsName;
@@ -549,8 +654,16 @@ onChannelFilterChange(label: string) {
         }
       });
     });
+
+
     this.list = res.now;
-    } else if (Object.keys(this.currentArea)[0] === 'rfsCode') {
+
+    // console.log(this.list);
+    
+      });
+
+    } 
+    else if (Object.keys(this.currentArea)[0] === 'rfsCode') {
       // console.log('rfsCode');
       res.now.forEach((element: any) => {
        $commonData.areaData.getAreaList().forEach((item: any) => {
@@ -636,11 +749,13 @@ onChannelFilterChange(label: string) {
           name: '线上成交平均转化周期',
           cycle: '',
           rate: '',
+          color: 0
         },
         {
             name: '线下成交平均转化周期',
             cycle: '',
             rate: '',
+            color: 0
         }
       ];
     if (!now) {
@@ -745,10 +860,13 @@ onChannelFilterChange(label: string) {
     .overview-theme-year{
       display: inline-block;
       margin-right: 54px;
-      color: #35E967;
+      color: #56D884;
     } 
     .overview-theme-chain{
-      color: #CD080A;
+      color: #FF7176;
+    }
+    .yellow {
+      color: #FFC72F;
     }
     .white{
       color: #fff;
@@ -838,7 +956,7 @@ onChannelFilterChange(label: string) {
         right: 40px;
       }
       .list-ol{
-        padding: 0 40px 0 60px;
+        padding: 0 20px 0 60px;
         height: 1062px;
         overflow: auto;
         .list-li{
@@ -890,7 +1008,7 @@ onChannelFilterChange(label: string) {
       .list-rate{
         display: inline-block;
         margin-left: 20px;
-        color:#35E967;
+        // color:#fff;
       }
       .list-rate-below{
         color: #E80404;
@@ -929,6 +1047,23 @@ onChannelFilterChange(label: string) {
     margin-left: 16px;
     margin-right: 54px;
   }
+
+.green{
+      color:#56D884;
+    }
+    .red{
+      color: #FF7176;
+    }
+    .yellow {
+      color: #FFC72F;
+    }
+
+  .white {
+    color: #FFFFFF;
+  }
+
+
+
 }
 
 ::-webkit-scrollbar {

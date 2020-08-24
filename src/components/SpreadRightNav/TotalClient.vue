@@ -71,6 +71,9 @@ export default class TotalClient extends Vue {
   }
   public totalClientEchartsinit() {
     const totalClient = document.getElementById('totalClient');
+    if (!totalClient) {
+      return false;
+    }
     const totalClientchart: any = this.$echarts.init(totalClient);
     let options: any = {
       tooltip: {

@@ -24,4 +24,9 @@ export class TurnoverDefeateApi extends HttpRequest {
     return this.Get('/api/dashboard/conversion/delivery/everyday', params);
   }
 
+  //目标值
+  transformAim(params: object) {
+    return this.Get('/api/manual/search/time' , params);
+  }
+ 
 }

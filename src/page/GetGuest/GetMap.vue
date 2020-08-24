@@ -374,6 +374,7 @@ export default class GetMap extends Vue {
   // 检测区域改变
   @Watch('currentArea')
   whencurrentAreaChange() {
+    
     // console.log(Object.keys(this.currentArea));
     if (Object.keys(this.currentArea)[0] === 'all') {
       this.geoShow = true;
@@ -387,6 +388,8 @@ export default class GetMap extends Vue {
       this.init();
     }
     if (Object.keys(this.currentArea)[0] === 'macCode') {
+      console.log('小区？');
+      
       this.geoShow = false;
       this.scatterWidth = 5;
       // this.mapData = this.convertData(this.data);
@@ -587,6 +590,58 @@ export default class GetMap extends Vue {
         // $api.DashboardApi.dealersData(dealerparams).then( (res: any) =>{
         //   console.log(res);
         // })
+        console.log(this.nowAreaData , '小区');
+        
+        let smallArea: any = [];
+        // console.log(Object.values(this.currentArea)[0] , '???');
+        
+        this.nowAreaData.forEach( (item: any) => {
+
+              item.children.forEach((info: any) => {
+                  if (info.macCode === Object.values(this.currentArea)[0]) {
+                     smallArea = item.children;
+                     console.log(smallArea , '进入if');
+                                             
+                  }
+              });
+        });
+        // console.log(smallArea);
+        // 添上小区名字
+        result = result.map( (item: any) => {
+          smallArea.forEach( (val: any) => {
+            if (item.source === val.macCode) {
+              item.sourceName = val.macName;
+            }
+          });
+            return item;
+        });
+        // console.log(result);
+        result.forEach( (item: any) => {
+          if (item.sourceName) {
+            area.push(item);
+          }
+        });
+        // console.log(area);
+        area.sort( (a: any, b: any) => {
+          return b.leadsNum - a.leadsNum;
+        });
+        // console.log(area);
+        if (area.length > 0) {
+          this.peakValue = area[0].leadsNum;
+          area.forEach( (item: any) => {
+           let arr: any = Object.values(item.areaMap)[0];
+          //  console.log(arr);
+            arr && arr.forEach( (val: any) => {
+              usearea.push({
+                name: this.Superfluous(val),
+                area: item.sourceName,
+                value: item.leadsNum
+              });
+            });
+          });
+        }
+        // console.log(usearea);
+        this.mapData = this.convertData(usearea);
 
         this.winGuestMapInit();
       }
@@ -650,7 +705,7 @@ export default class GetMap extends Vue {
         });
       });
       this.nowAreaData = areaCode;
-      // console.log(this.nowAreaData);
+      // console.log(this.nowAreaData , 'map数据');
       this.init();
     });
   }

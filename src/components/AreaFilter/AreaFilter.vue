@@ -124,6 +124,9 @@ export default class AreaFilter extends Vue {
       checkedItem.push(item['rfsCode']);
     });
     this.checkedArea = checkedItem;
+    this.checkAll = true;
+    this.currentRfsCode = '';
+    this.indeterminateTotal = false;
   }
 
   handleCheckTotalChange(flag: boolean): void {

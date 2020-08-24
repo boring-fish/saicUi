@@ -5,12 +5,14 @@
     <span class="border border-bottom-left"></span>
     <span class="border border-bottom-right"></span>
     <SceneHeader :title="title"></SceneHeader>
+    <img src="../../assets/img/expect.png" alt="">
     <div class="scenemaked">
-      <div class="scenemakedtiao" v-for="(item,index) in makeList" :key="index">
+      <!-- <div class="scenemakedtiao" v-for="(item,index) in makeList" :key="index">
         <div class="xuhao">{{index+1}}</div>
         <span class="makename">{{item.name}}</span>
         <span class="makesum">{{item.sum}}</span>
-      </div>
+      </div> -->
+
     </div>
   </div>
 </template>
@@ -64,6 +66,17 @@ export default class SceneMake extends Vue {
 .scenemake-warp {
   width: 100%;
   height: 960px;
+  position: relative;
+      img {
+    width: 100%;
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    }
   // background: #00263e;
   .scenetital {
     font-size: 36px;
@@ -74,6 +87,8 @@ export default class SceneMake extends Vue {
   }
   .scenemaked {
     padding:0 55px;
+    // position: relative;
+
     .scenemakedtiao {
       width: 100%;
       height: 115px;

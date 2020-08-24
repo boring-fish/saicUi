@@ -46,7 +46,7 @@ export default class DatePicker extends Vue {
 //     return value;
 //   }
 
-  currentYear: string = moment().format( 'YYYY-MM' );
+  currentYear: string = moment().format('YYYYMMDD') === moment().startOf('month').format('YYYYMMDD') ? moment().subtract(1, 'months').format('YYYY-MM') : moment().format( 'YYYY-MM' );
   selectedData: string = this.currentYear;
   datePanel: boolean = false;
   pickerOptions = {

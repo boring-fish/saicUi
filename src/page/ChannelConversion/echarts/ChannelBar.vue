@@ -68,7 +68,22 @@ export default class ChannelBar extends Vue {
 
   public nowCode: string = 'rfsCode';
   setOption() {
+    let newData: any = [];
+    this.data.forEach((item: any) => {
+      newData.push(item);
+    });
     
+    // console.log(this.dataKey);
+    if (this.dataKey === 'num') {
+    newData.sort((a: any , b: any) => {
+      return b.num - a.num;
+    });
+    } else {
+    newData.sort((a: any , b: any) => {
+      return b.monthCardsCnt - a.monthCardsCnt;
+    });
+    }
+
     const option: object = {
           // legend: {
           //     show: false,
@@ -106,7 +121,7 @@ export default class ChannelBar extends Vue {
               show: true,
               offset: 0, 
               type: 'category',
-              data: this.data.map( ( item, index) => {
+              data: newData.map( ( item: any, indexa: any) => {
                 return this.isR ? item.rfsCode : `${item[this.nowCode]}-${item[this.dataKey]}`;
               }),
               axisLabel: {
@@ -164,20 +179,17 @@ export default class ChannelBar extends Vue {
           },
            dataZoom: {
              start: 0,
-             end: this.data.length <= 3 ? 100 : Math.round(3 / this.data.length * 100),
+             end: newData.length <= 3 ? 100 : Math.round(3 / newData.length * 100),
             type: 'slider',
-            height: 20,
+            height: 30,
             fillerColor: '#48558B' ,
             borderColor: 'none',
-        
             bottom: 10,
             endValue: 4,
             showDetail: false,
             handleStyle: {
-        
               opacity: 0,
             },
-      
             dataBackground: {
               lineStyle: {
                 opacity: 0,
@@ -227,7 +239,7 @@ export default class ChannelBar extends Vue {
         const seriesItem = {
             name: '数量',
             type: 'bar',
-            data: this.data.map( ( item, index ) => {  return item[this.dataKey]; }),
+            data: newData.map( ( item: any, index: any ) => {  return item[this.dataKey]; }),
              barGap: '10%',
             barCategoryGap: '70%',
             showBackground: true,

@@ -30,7 +30,7 @@
             <span class="border border-bottom-right"></span>
             <h3 class="block-title funnel-title">跟进转化漏斗 </h3>
             <div class="funnel-content">
-              <ChannelFunnel id="funnel" :data="conversion" :isR="isR" v-if="isRender"></ChannelFunnel>
+              <ChannelFunnel id="funnel" :filterLabel="filterLabel" :data="conversion" :isR="isR" v-if="isRender"></ChannelFunnel>
             </div>
             </div>
           <!-- 环形图 -->
@@ -135,38 +135,7 @@ tabsArr: string[] = ['全部', '垂媒', '厂方分配', '自然获客', '外拓
 detailsName: string[] = [ '建卡情况', '到店情况', '试乘试驾情况', '交车情况'];
 Rcolor: any[] = [];
 nonRcolor: string[] = ['#236BB4', '#EBCD52', '#4EDFD1', '#65A7EA'];
-conversion: object[] = [
-    {
-      name: '获客',
-      target: 0,
-      achieve: 0,
-    },
-    {
-      name: '建卡',
-      target: 0,
-      achieve: 0,
-    },
-    {
-      name: '到店',
-      target: 0,
-      achieve: 0,
-    },
-    {
-      name: '试乘试驾',
-      target: 0,
-      achieve: 0,
-    },
-    {
-      name: '订单',
-      target: 0,
-      achieve: 0,
-    },
-    {
-      name: '成交',
-      target: 0,
-      achieve: 0,
-    },
-  ];
+conversion: any = {};
 details: any[] = [
   [],
   [],
@@ -209,6 +178,7 @@ details: any[] = [
   getFunnelData() {
     let params: any = {
       brandId: this.brandId,
+      // time: '202001'
       time: this.timeMonth
     };
     if (this.filterLabel && this.filterLabel !== '全部') {
@@ -228,38 +198,7 @@ details: any[] = [
       params = Object.assign(params, this.currentArea);
     }
     $api.DashboardApi.funnel(params).then((res) => {
-      this.conversion = [
-        {
-          name: '获客',
-          target: 0,
-          achieve: res.monthLeadsCnt,
-        },
-        {
-          name: '建卡',
-          target: 0,
-          achieve: res.monthCardsCnt,
-        },
-        {
-          name: '到店',
-          target: 0,
-          achieve: res.monthArriveCnt,
-        },
-        {
-          name: '试乘试驾',
-          target: 0,
-          achieve: res.monthTestRideCnt,
-        },
-        {
-          name: '订单',
-          target: 0,
-          achieve: res.monthOrderCnt,
-        },
-        {
-          name: '成交',
-          target: 0,
-          achieve: res.monthDeliverCnt,
-        },
-      ];
+      this.conversion = res ? res : {};
       this.isRender = true;
     }).catch((err) => {
       this.resetConversionData();

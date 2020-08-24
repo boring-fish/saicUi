@@ -1,19 +1,24 @@
 <template>
   <div class="setting-wrap">
-       <div class="box-bg-border" 
-       v-for="item in MenuList"
-       :key="item.route"
-       @click="handleGoRoute(item.route)">
-            <span class="border border-top-left"></span>
-            <span class="border border-top-right"></span>
-            <span class="border border-bottom-left"></span>
-            <span class="border border-bottom-right"></span>
-            <div class="gradient"></div>
-            <div class="diamond"></div>
-            <div class="menu-name">{{item.name}}</div>
-            <div class="diamond"></div>
-            <div class="gradient-reverse"></div>
+    <template
+      v-for="(item, index) in MenuList"
+    >
+      <div class="box-bg-border"
+        :key="index"
+        @click="handleGoRoute(item.route)"
+        v-if="item.admission"
+      >
+        <span class="border border-top-left"></span>
+        <span class="border border-top-right"></span>
+        <span class="border border-bottom-left"></span>
+        <span class="border border-bottom-right"></span>
+        <div class="gradient"></div>
+        <div class="diamond"></div>
+        <div class="menu-name">{{item.name}}</div>
+        <div class="diamond"></div>
+        <div class="gradient-reverse"></div>
       </div>
+    </template>
   </div>
 </template>
 
@@ -24,18 +29,23 @@ import { Component, Vue } from 'vue-property-decorator';
 @Component({})
 export default class Setting extends Vue {
 
-  MenuList = [{
+  effectiveRole = $permission.getEffectiveRole();
+  MenuList: any[] = [{
       name: '目标值配置',
       route: 'aimSetting',
+      admission: false
     }, {
       name: '预警/报警值配置',
-      route: '',
+      route: 'earlyWarnSetting',
+      admission: false
     }, {
       name: '菜单权限配置',
-      route: '',
+      route: 'userRoleSetting',
+      admission: false
     }, {
       name: '营销闭环看板',
-      route: 'dashboard',
+      route: '/dashboard',
+      admission: false
     }
   ];
 
@@ -44,6 +54,29 @@ export default class Setting extends Vue {
       return;
     }
     this.$router.push(route);
+  }
+
+  created() {
+    this.getRoleinRoute();
+  }
+
+  getRoleinRoute() {
+    let roles = $permission.getRoles();
+    if ( roles['isKpiAdmin'] ) {
+      this.MenuList[0]['admission'] = true;
+      this.MenuList[1]['admission'] = true;
+    }
+    if ( this.effectiveRole ) {
+      if ( this.effectiveRole === 'admin' ) {
+        this.MenuList.forEach((item) => {
+          item['admission'] = true;
+        });
+        return;
+      }
+
+      this.MenuList[3]['admission'] = true;
+      return;
+    }
   }
 
 }

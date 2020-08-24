@@ -2,16 +2,27 @@
   <div class="topbar-wrap">
     <div class="topbar-box">
       <!-- 看板部分ml -->
+      <div class="return-btn" @click="returnTosetting" v-if="hideFlag">
+        <i class="el-icon-arrow-left"></i>返回
+      </div>
       <div class="specification" @click="onSpecificationOpen">
         <i class="iconfont iconshuoming1"></i>指标说明
       </div>
       <div class="pointer" :class=" isActive?'activeoverview':'overview' " @click="handleOverViewActive">
         <div class="overViewLogo">
-          <img src="@/assets/img/logo-text@2x.png" alt="logo" />
+          <img src="@/assets/img/logo@2x.png" alt="logo" />
         </div>
         <p class="overViewTitle">
-          <span>营销闭环度量看板</span>
-          <img src="@/assets/img/Saic Sales Dashboard@2x.png" alt="">
+          <span class="overViewTitlename">营销闭环度量看板</span>
+          <!-- <img src="@/assets/img/Saic Sales Dashboard@2x.png" alt=""> -->
+           <span class="sysParam"
+            ><span class="systimetitle">系统时间:</span
+            ><span class="systime">{{sysTimeParam.sysTime}}</span></span
+          >
+          <span class="sysParam"
+            ><span class="systimetitle">数据更新时间:</span
+            ><span class="systime">{{sysTimeParam.dataUpdateTime}}</span></span
+          >
         </p>
       </div>
       <!-- 传播，获客，转化ml -->
@@ -43,7 +54,7 @@
                     同比
                     <span class="margin-left"
                      v-if="dataList.spread.spreadImpModel.tb"
-                      :class=" !dataList.spread.spreadImpModel.tb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.spread.spreadImpModel.tb.startsWith('-'), dataList.spread.spreadImpModel.tbColor)"
                     >{{dataList.spread.spreadImpModel.tb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -53,7 +64,7 @@
                     环比
                     <span class="margin-left"
                       v-if="dataList.spread.spreadImpModel.hb"
-                      :class=" !dataList.spread.spreadImpModel.hb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.spread.spreadImpModel.hb.startsWith('-'), dataList.spread.spreadImpModel.hbColor)"
                     >{{dataList.spread.spreadImpModel.hb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -71,8 +82,8 @@
                     完成率
                     <span class="margin-left"
                       v-if="dataList.spread.spreadImpModel.finished"
-                      :style=" dataList.spread.spreadImpModel.finished > 90 ? 'color: #35E967' : 'color: #E80404' "
-                    >{{dataList.spread.spreadImpModel.finished}}%</span>
+                      :class="classString(dataList.spread.spreadImpModel.finished.startsWith('-'), dataList.spread.spreadImpModel.aimColor, true)"
+                    >{{dataList.spread.spreadImpModel.finished}}</span>
                     <span v-else>——</span>
                   </p>
                 </li>
@@ -95,7 +106,7 @@
                     同比
                     <span class="margin-left"
                       v-if="dataList.spread.spreadExposureModel.tb"
-                      :class=" !dataList.spread.spreadExposureModel.tb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.spread.spreadExposureModel.tb.startsWith('-'), dataList.spread.spreadExposureModel.tbColor)"
                     >{{dataList.spread.spreadExposureModel.tb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -105,7 +116,7 @@
                     环比
                     <span class="margin-left"
                       v-if="dataList.spread.spreadExposureModel.hb"
-                      :class=" !dataList.spread.spreadExposureModel.hb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.spread.spreadExposureModel.hb.startsWith('-'), dataList.spread.spreadExposureModel.hbColor)"
                     >{{dataList.spread.spreadExposureModel.hb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -123,8 +134,8 @@
                     完成率
                     <span class="margin-left"
                       v-if="dataList.spread.spreadExposureModel.finished"
-                      :style=" dataList.spread.spreadExposureModel.finished>90? 'color: #35E967': 'color: #E80404' "
-                    >{{dataList.spread.spreadExposureModel.finished}}%</span>
+                      :class="classString(dataList.spread.spreadExposureModel.finished.startsWith('-'), dataList.spread.spreadExposureModel.aimColor, true)"
+                    >{{dataList.spread.spreadExposureModel.finished}}</span>
                     <span v-else>——</span>
                   </p>
                 </li>
@@ -164,7 +175,7 @@
                     同比
                     <span class="margin-left"
                       v-if="dataList.winguest.Retention.tb"
-                      :class=" !dataList.winguest.Retention.tb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.winguest.Retention.tb.startsWith('-'), dataList.winguest.Retention.tbColor)"
                     >{{dataList.winguest.Retention.tb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -174,7 +185,7 @@
                     环比
                     <span class="margin-left"
                       v-if="dataList.winguest.Retention.hb"
-                      :class=" !dataList.winguest.Retention.hb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.winguest.Retention.hb.startsWith('-'), dataList.winguest.Retention.hbColor)"
                     >{{dataList.winguest.Retention.hb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -192,8 +203,8 @@
                     完成率
                     <span class="margin-left"
                       v-if="dataList.winguest.Retention.finished"
-                      :style=" dataList.winguest.Retention.finished>90? 'color: #35E967': 'color: #E80404' "
-                    >{{dataList.winguest.Retention.finished}}%</span>
+                      :class="classString(dataList.winguest.Retention.finished.startsWith('-'), dataList.winguest.Retention.aimColor, true)"
+                    >{{dataList.winguest.Retention.finished}}</span>
                     <span v-else>——</span>
                   </p>
                 </li>
@@ -216,7 +227,7 @@
                     同比
                     <span class="margin-left"
                       v-if="dataList.winguest.intention.tb"
-                      :class="!dataList.winguest.intention.tb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.winguest.intention.tb.startsWith('-'), dataList.winguest.intention.tbColor)"
                     >{{dataList.winguest.intention.tb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -226,7 +237,7 @@
                     环比
                     <span class="margin-left"
                       v-if="dataList.winguest.intention.hb"
-                      :class=" !dataList.winguest.intention.hb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.winguest.intention.hb.startsWith('-'), dataList.winguest.intention.hbColor)"
                     >{{dataList.winguest.intention.hb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -244,8 +255,8 @@
                     完成率
                     <span class="margin-left"
                       v-if="dataList.winguest.intention.finished"
-                      :style=" dataList.winguest.intention.finished>90? 'color: #35E967': 'color: #E80404' "
-                    >{{dataList.winguest.intention.finished}}%</span>
+                      :class="classString(dataList.winguest.intention.finished.startsWith('-'), dataList.winguest.intention.aimColor, true)"
+                    >{{dataList.winguest.intention.finished}}</span>
                     <span v-else>——</span>
                   </p>
                 </li>
@@ -284,7 +295,7 @@
                     同比
                     <span class="margin-left"
                       v-if="dataList.conversion.createcard.tb"
-                      :class=" !dataList.conversion.createcard.tb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.conversion.createcard.tb.startsWith('-'), dataList.conversion.createcard.tbColor)"
                     >{{dataList.conversion.createcard.tb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -294,7 +305,7 @@
                     环比
                     <span class="margin-left"
                       v-if="dataList.conversion.createcard.hb"
-                      :class=" !dataList.conversion.createcard.hb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.conversion.createcard.hb.startsWith('-'), dataList.conversion.createcard.hbColor)"
                     >{{dataList.conversion.createcard.hb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -312,8 +323,8 @@
                     完成率
                     <span class="margin-left"
                       v-if="dataList.conversion.createcard.finished"
-                      :style=" dataList.conversion.createcard.finished>90? 'color: #35E967': 'color: #E80404' "
-                    >{{dataList.conversion.createcard.finished}}%</span>
+                      :class="classString(dataList.conversion.createcard.finished.startsWith('-'), dataList.conversion.createcard.aimColor, true)"
+                    >{{dataList.conversion.createcard.finished}}</span>
                     <span v-else>——</span>
                   </p>
                 </li>
@@ -336,7 +347,7 @@
                     同比
                     <span class="margin-left"
                       v-if="dataList.conversion.deal.tb"
-                      :class=" !dataList.conversion.deal.tb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.conversion.deal.tb.startsWith('-'), dataList.conversion.deal.tbColor)"
                     >{{dataList.conversion.deal.tb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -346,7 +357,7 @@
                     环比
                     <span class="margin-left"
                       v-if="dataList.conversion.deal.hb"
-                      :class=" !dataList.conversion.deal.hb.startsWith('-') ? 'iconfont iconshangsheng' : 'iconfont iconxiajiang'"
+                      :class="classString(dataList.conversion.deal.hb.startsWith('-'), dataList.conversion.deal.hbColor)"
                     >{{dataList.conversion.deal.hb | negative}}</span>
                     <span v-else>——</span>
                   </p>
@@ -364,8 +375,8 @@
                     完成率
                     <span class="margin-left"
                       v-if="dataList.conversion.deal.finished"
-                      :style=" dataList.conversion.deal.finished>90? 'color: #35E967': 'color: #E80404' "
-                    >{{dataList.conversion.deal.finished}}%</span>
+                      :class="classString(dataList.conversion.deal.finished.startsWith('-'), dataList.conversion.deal.aimColor, true)"
+                    >{{dataList.conversion.deal.finished}}</span>
                     <span v-else>——</span>
                   </p>
                 </li>
@@ -377,14 +388,14 @@
       <!-- 预警ml -->
       <div class="waring">
         <div class="alert" @click="earlyWarn()">
-          <img src="@/assets/img/security@2x.png" alt="预警" />
+          <img :src="warningType==='0'?warningTypeImg.yellow:warningType==='1'?warningTypeImg.error:warningTypeImg.security" alt="预警" />
         </div>
         <div class="link">
-          <div class="iconRight">
+          <div class="iconRight" @click="scenePage">
             <!-- <div class="iconfont icondanjiantou-you"></div> -->
-            <el-button type="primary" icon="el-icon-arrow-right" circle class="right-button" @click="sceneTab()"></el-button>
+            <el-button type="primary" icon="el-icon-arrow-right" circle class="right-button" ></el-button>
           </div>
-          <div class="iconClose">
+          <div class="iconClose" @click="logout">
             <div class="iconfont iconzhuxiaodenglu"></div>
           </div>
         </div>
@@ -397,8 +408,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from 'vue-property-decorator';
-
+import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import moment from 'moment';
 @Component({
   components: {
   },
@@ -419,7 +430,10 @@ export default class TopBar extends Vue {
     default: ''
   })
   name!: string;
-
+@Prop({
+    required: false,
+    default: 101
+  }) brandId!: any;
   @Prop({
     required: false,
     default: {
@@ -480,65 +494,48 @@ export default class TopBar extends Vue {
     }
   })
   dataList!: object;
-
+  hideFlag: boolean = false;
   // 声明四个状态，是否点击
   private isActive: boolean = true;
   private isSpreadActive: boolean = false;
   private isGetVisitorsActive: boolean = false;
   private isConversionActive: boolean = false;
+  warningTypeImg: any = {
+    security: require('@/assets/img/security@2x.png'),
+    yellow: require('@/assets/img/yellow@2x.png'),
+    error: require('@/assets/img/warning@2x.png')
+    };
+    warningType: String = '';
+ //系统时间
+  sysTimeParam: Object = {};
+  classString(isMinus: boolean, colorStatus: number, isKpi: boolean = false) {
+    let classString = '';
+    if (!isKpi) {
+      if (isMinus) {
+        classString += 'iconfont iconxiajiang';
+      } else {
+        classString += 'iconfont iconshangsheng';
+      }
+    }
 
-  // dataList: any = {
-  //   spread: {
-  //     spreadImpModel: {
-  //       value: '',
-  //       tb: '',
-  //       hb: '',
-  //       aims: '',
-  //       finished: ''
-  //     },
-  //     visitor: {
-  //       value: '',
-  //       tb: '',
-  //       hb: '',
-  //       aims: '',
-  //       finished: ''
-  //     }
-  //   },
-  //   conversion: {
-  //     createcard: {
-  //       value: '',          //98.38
-  //       tb: '',              //6.00
-  //       hb: '',               //6.00
-  //       aims: '',          //1200000
-  //       finished: ''       //92.85
-  //     },
-  //     deal: {
-  //       value: '',      //36.29
-  //       tb: '',            //6.56
-  //       hb: '',           //-1.07
-  //       aims: '',         //500000
-  //       finished: ''      //88.38
-  //     }
-  //   },
-  //   winguest: {
-  //     Retention: {
-  //       value: '',
-  //       tb: '',
-  //       hb: '',
-  //       aims: '',
-  //       finished: ''
-  //     },
-  //     intention: {
-  //       value: '',
-  //       tb: '',
-  //       hb: '',
-  //       aims: '',
-  //       finished: ''
-  //     }
-  //   }
-  // };
-
-
+    switch (colorStatus) {
+      case 0:
+        classString += ' white';
+        break;
+      case 1:
+        classString += ' red';
+        break;
+      case 2:
+        classString += ' yellow';
+        break;
+      case 3:
+        classString += ' green';
+        break;
+      default:
+        break;
+    }
+    return classString;
+  }
   onSpecificationOpen() {
     this.$emit('onSpecificationOpen', true);
   }
@@ -592,13 +589,19 @@ export default class TopBar extends Vue {
   public sceneTab() {
     // this.$route.push('scene');
     // this.$route.scene;
-    // this.$router.push({path: '/sceneIndex'});  
+    this.$router.push({path: 'scene'});  
 
   }
   public earlyWarn() {
-    // this.$emit('openyj', 'true');
+    this.$emit('openyj', 'true');
+  }
+  mounted() {
+   this.getWarnData();
   }
   created() {
+    this.getRole();
+    this.updateTime();
+    
     switch (this.$route.name) {
       case 'dashboard':
         this.overviewActive();
@@ -619,8 +622,42 @@ export default class TopBar extends Vue {
         break;
     }
   }
+  logout() {
+    $api.DashboardApi.logout().then((res: any) => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userInfo');
+      window.location.replace(res.remoteLogoutUri);
+    });
+  }
+  scenePage() {
+     this.$router.push({path: '/sceneIndex', query: { brandId: this.brandId }}); 
+  }
+  //是否有报警预警数据
+  getWarnData() {
+    $api.WarnSettingApi.getwarningType({}).then((res: any) => {
+       this.warningType = res.warningType;
+      });
+  }
+   //获取系统时间
+  updateTime() {
+    $api.DashboardApi.getTime().then((res: any) => {
+      this.sysTimeParam = res;
+    });
+  }
 
-  mounted() {
+  returnTosetting() {
+    this.$router.push('/setting');
+  }
+
+  getRole() {
+    let roles = $permission.getRoles();
+    let effectiveRole = $permission.getEffectiveRole();
+    if ( roles['isKpiAdmin'] ) {
+      this.hideFlag = true;
+    }
+    if ( effectiveRole && effectiveRole === 'admin' ) {
+      this.hideFlag = true;
+    }
   }
 
   //换算数据单位
@@ -656,10 +693,20 @@ export default class TopBar extends Vue {
   .pointer{
     cursor: pointer;
   }
+  .return-btn {
+    position: absolute;
+    top: 38px;
+    left: 52px;
+    width: 100px;
+    height:40px;
+    font-size:28px; 
+    color: #fff;
+    cursor: pointer;   
+  }
   .specification{
     position: absolute;
     top: 40px;
-    left: 40px;
+    left: 587px;
     width:194px;
     height:40px;
     font-size:28px;
@@ -695,10 +742,10 @@ export default class TopBar extends Vue {
     // background-color: #000;
   }
   .overViewLogo {
-    width: 116px;
-    height: 136px;
+    width: 100px;
+    height: 100px;
     position: absolute;
-    left: 106px;
+    left: 70px;
     top: 128px;
     img {
       width: 100%;
@@ -711,11 +758,32 @@ export default class TopBar extends Vue {
     width: 480px;
     height: 140px;
     position: absolute;
-    left: 252px;
-    top: 119px;
+    left: 236px;
+    top: 130px;
     span{
       color: rgba(255, 255, 255, 1);
       font-family: 'PingFangSC-Semibold';
+    }
+    .overViewTitlename{
+     display: block;
+    }
+    .sysParam {
+      display: block;
+      width: 570px;
+      height: 40px;
+      font-size: 28px;
+      font-weight: 500;
+
+      line-height: 60px;
+      .systimetitle {
+        width: 197px;
+        display: inline-block;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .systime {
+        width: 298px;
+        color: rgba(255, 255, 255, 0.6);
+      }
     }
   }
   .topNav {
@@ -777,11 +845,17 @@ export default class TopBar extends Vue {
                   color: #fff;
                   margin-left: 20px;
                 }
-                .iconxiajiang {
-                  color: #e80404;
-                }
-                .iconshangsheng {
-                  color: #35e967;
+                 .green{
+                       color:#56D884;
+                     }
+                     .red{
+                       color: #FF7176;
+                     }
+                     .yellow {
+                       color: #FFC72F;
+                     }
+                .white {
+                  color: #fff;
                 }
               }
             }
@@ -926,6 +1000,7 @@ export default class TopBar extends Vue {
       margin-right: 20px;
       border-radius: 0px 0px 16px 16px;
       background: $box-bg-primary;
+      cursor: pointer;
       img {
         width: 172px;
         height: 172px;

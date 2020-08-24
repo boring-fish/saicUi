@@ -25,15 +25,15 @@
     <!-- echarts图上的数据 -->
     <div class="preview">
       <div class="childname">
-        <p v-for="(item, index) in name" :key="index">
-          {{ item.name }}
+        <p v-for="(item, index) in datalist" :key="index">
+          {{ item.type === '第一方触点' ? '厂方分配' : item.type }}
         </p>
       </div>
       <div class="child-wrap">
         <div
           v-for="(item, index) in datalist"
           :key="index"
-          @click="handleEchartOpen(index)"
+          @click="handleEchartOpen(index, item)"
         >
           <li @click="centerDialogVisible = true">
             <p
@@ -46,15 +46,23 @@
               style="height:48px; line-height:48px; font-size:24px; text-align:left; color: rgba(255, 255, 255, 0.4)"
             >
               {{ planTbHb }}
-              <span
-                v-if="item[channelStr]"
-                :class="
-                  item[channelStr].startsWith('-')
-                    ? 'iconfont iconxiajiang'
-                    : 'iconfont iconshangsheng'
-                "
-                >{{ item[channelStr].startsWith('-') ? item[channelStr].substring(1) : item[channelStr] }}</span
-              >
+               <span v-if="planTbHb=='同比'"> 
+                    <span v-if="item[channelStr].startsWith('-')" class="iconfont iconxiajiang" :class="item.color === 1 ? 'red' : item.color === 2 ? 'yellow' : item.color === 3 ? 'green' : 'white'"></span>
+                    <span v-else-if="item[channelStr]" class="iconfont iconshangsheng" :class="item.color === 1 ? 'red' : item.color === 2 ? 'yellow' : item.color === 3 ? 'green' : 'white'"></span>
+                     <span v-else>——</span>
+                    <!-- <span v-if="item[channelStr]" :class="item.color ? 'iconfont iconxiajiang': 'iconfont iconshangsheng'"
+                      >{{ item[channelStr].startsWith('-') ? item[channelStr].substring(1) : item[channelStr] }}</span
+                    > -->
+                    <span  :class="item.color === 1 ? 'red' : item.color === 2 ? 'yellow' : item.color === 3 ? 'green' : 'white'"
+                      >{{ item[channelStr].startsWith('-') ? item[channelStr].substring(1) : item[channelStr] }}</span>
+               </span>
+               <span v-else-if="planTbHb=='环比'"> 
+                    <span v-if="item[channelStr].startsWith('-')" class="iconfont iconxiajiang" :class="item.hbcolor === 1 ? 'red' : item.hbcolor === 2 ? 'yellow' : item.hbcolor === 3 ? 'green' : 'white'"></span>
+                    <span v-else-if="item[channelStr]" class="iconfont iconshangsheng" :class="item.hbcolor === 1 ? 'red' : item.hbcolor === 2 ? 'yellow' : item.hbcolor === 3 ? 'green' : 'white'"></span>
+                     <span v-else>——</span>
+                    <span :class="item.hbcolor === 1 ? 'red' : item.hbcolor === 2 ? 'yellow' : item.hbcolor === 3 ? 'green' : 'white'"
+                      >{{ item[channelStr].startsWith('-') ? item[channelStr].substring(1) : item[channelStr] }}</span >  
+              </span>
               <span v-else>——</span>
             </p>
           </li>
@@ -112,7 +120,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator';
-import { calculation } from '@/utils/utils.ts';
+import { calculation, decideColor } from '@/utils/utils.ts';
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -162,6 +170,8 @@ export default class GetChannl extends Vue {
   offLine: any = '';
   // nav点击前的默认配置
   channelStr: any = 'tb'; //初始化时默认同比
+  actualData: any = {}; //kpi,预警，报警阈值
+
   activeClassIndex: number = 0;
   planTbHb: string = '同比';
   public tableMenu: any = ['同比', '环比'];
@@ -228,18 +238,18 @@ export default class GetChannl extends Vue {
     '高意向-H',
     '中意向-A',
     '低意向-B',
-    '战败-F',
+    // '战败-F',
     '同比意向',
   ];
   channelLegendColor: any = [
     '#6BC7E6',
     '#4EDFD1',
     '#EBCD52',
-    '#F27A7A',
+    // '#F27A7A',
     '#236BB4',
   ];
   channelXaxisData: any = [
-    '厂商分配',
+    '厂方分配',
     '垂媒',
     '外拓获客',
     '自然获客',
@@ -330,17 +340,14 @@ export default class GetChannl extends Vue {
         res.now.forEach( (item: any) => {
         arr.push(item.leadsNum);
         });
-        // console.log(arr);
         // 加到一起
         let sum: any = arr.reduce( (pre: any, now: any) => {
           return pre + now;
         }, 0);
-        // console.log(sum);
         // 线上占比
         let onLine: any = res.now.filter( (item: any) => {
           return item.ifonline === 1;
         });
-        // console.log(onLine);
         if (onLine.length > 0) {
           this.onLine = (100 * onLine[0].leadsNum / sum).toFixed(2) + '%';
         }
@@ -348,7 +355,6 @@ export default class GetChannl extends Vue {
         let offLine: any = res.now.filter( (item: any) => {
           return item.ifonline === 2;
         });
-        // console.log(offLine);
         if (offLine.length > 0) {
           this.offLine = (100 * offLine[0].leadsNum / sum).toFixed(2) + '%';
         }
@@ -369,125 +375,188 @@ export default class GetChannl extends Vue {
       params = Object.assign(params, this.currentArea);
     }
     $api.DashboardApi.getData(params).then((res: any) => {
-      // console.log(res);
+      // 厂方分配
       let nowcontactData: any = {
         year: [],
         last: [],
         now: [],
+        // type: '第一方触点'
+        type: '厂方分配'
       };
       //垂媒数据
       let nowverticalMediaData: any = {
         year: [],
         last: [],
         now: [],
+        type: '垂媒'
       };
       //外拓数据
       let nowoutreachData: any = {
         year: [],
         last: [],
         now: [],
+        type: '外拓获客',
+
       };
       //自然数据
       let nownaturalData: any = {
         year: [],
         last: [],
         now: [],
+        type: '自然获客'
       };
       let allNowsleadsNum = 0;      //当前  now
       let allYearleadsNum = 0;      //去年  lastyear
       let allLastleadsNum = 0;      //上次  last
       // 为echart图获得hb数组
-      res.last.forEach((item: any) => {
-        allLastleadsNum += item.leadsNum;     //上次的全部
-        if (item.sourceType === '第一方触点') {
-          nowcontactData.last.push(item);
-          this.channelHb.splice(0, 1, item.leadsNum);
-        } else if (item.sourceType === '垂媒') {
-          nowverticalMediaData.last.push(item);
-          this.channelHb.splice(1, 1, item.leadsNum);
-        } else if (item.sourceType === '外拓客户') {
-          nowoutreachData.last.push(item);
-          this.channelHb.splice(2, 1, item.leadsNum);
-        } else if (item.sourceType === '自然获客') {
-          nownaturalData.last.push(item);
-          this.channelHb.splice(3, 1, item.leadsNum);
-        }
-      });
+      if (res.last) {
+         let hbcf = 0, cm = 0, wt = 0, zr = 0;
+          res.last.forEach((item: any) => {
+          allLastleadsNum += item.leadsNum;     //上次的全部
+        // if (item.sourceType === '第一方触点') {
+        if (item.sourceType === '厂方分配' || item.sourceType === '第一方触点') {
 
-      res.now.forEach((item: any) => {
+          // nowcontactData.last.push(item);
+          // this.channelHb.splice(0, 1, item.leadsNum);
+           if (item.probTag) {
+          hbcf += item.leadsNum;
+          nowcontactData.last.push(item);
+        }
+          this.channelHb.splice(0, 1, hbcf);
+        } else if (item.sourceType === '垂媒') {
+          // nowverticalMediaData.last.push(item);
+          // this.channelHb.splice(1, 1, item.leadsNum);
+            if (item.probTag) {
+           cm += item.leadsNum;
+           nowverticalMediaData.last.push(item);
+        }
+        this.channelHb.splice(1, 1, cm);
+        } else if (item.sourceType === '外拓客户' || item.sourceType === '外拓获客') {
+          // nowoutreachData.last.push(item);
+          // this.channelHb.splice(2, 1, item.leadsNum);
+              if (item.probTag) {
+           wt += item.leadsNum;
+           nowoutreachData.last.push(item);
+        }
+        this.channelHb.splice(2, 1, cm);
+        } else if (item.sourceType === '自然获客') {
+          // nownaturalData.last.push(item);
+          // this.channelHb.splice(3, 1, item.leadsNum);
+              if (item.probTag) {
+           zr += item.leadsNum;
+           nownaturalData.last.push(item);
+        }
+          this.channelHb.splice(3, 1, zr);
+        }
+      });
+      }
+    
+if (res.now) {
+   res.now.forEach((item: any) => {
         allNowsleadsNum += item.leadsNum;
-        if (item.sourceType === '第一方触点') {
-          nowcontactData.now.push(item);
+        // item.sourceType === '第一方触点'
+        if (item.sourceType === '厂方分配' || item.sourceType === '第一方触点') {
+             if (item.probTag) {
+                nowcontactData.now.push(item);
+             }
         } else if (item.sourceType === '垂媒') {
-          nowverticalMediaData.now.push(item);
-        } else if (item.sourceType === '外拓客户') {
-          nowoutreachData.now.push(item);
+           if (item.probTag) {
+               nowverticalMediaData.now.push(item);
+             }
+        } else if (item.sourceType === '外拓客户' || item.sourceType === '外拓获客') {
+           if (item.probTag) {
+                nowoutreachData.now.push(item);
+             }
         } else if (item.sourceType === '自然获客') {
-          nownaturalData.now.push(item);
+           if (item.probTag) {
+               nownaturalData.now.push(item);
+             }
         }
       });
+}
+     
       // 为echart图获得tb数组
-      res.lsatYear.forEach((item: any) => {
+      if (res.lsatYear) {
+         let hbcf = 0, cm = 0, wt = 0, zr = 0;
+         res.lsatYear.forEach((item: any) => {
         allYearleadsNum += item.leadsNum;
-        if (item.sourceType === '第一方触点') {
+        if (item.sourceType === '第一方触点' || item.sourceType === '厂方分配') {
+          // nowcontactData.year.push(item);
+         if (item.probTag) {
+          hbcf += item.leadsNum;
+
           nowcontactData.year.push(item);
-          this.channelTb.splice(0, 1, item.leadsNum);
+
+        }
+          this.channelTb.splice(0, 1, hbcf);
         } else if (item.sourceType === '垂媒') {
-          nowverticalMediaData.year.push(item);
-          this.channelTb.splice(1, 1, item.leadsNum);
-        } else if (item.sourceType === '外拓客户') {
-          nowoutreachData.year.push(item);
-          this.channelTb.splice(2, 1, item.leadsNum);
+          // nowverticalMediaData.year.push(item);
+          // this.channelTb.splice(1, 1, item.leadsNum);
+            if (item.probTag) {
+           cm += item.leadsNum;
+           nowverticalMediaData.year.push(item);
+
+        }
+        this.channelTb.splice(1, 1, cm);
+        } else if (item.sourceType === '外拓客户' || item.sourceType === '外拓获客') {
+          // nowoutreachData.year.push(item);
+          // this.channelTb.splice(2, 1, item.leadsNum);
+             if (item.probTag) {
+           wt += item.leadsNum;
+           nowoutreachData.year.push(item);
+        }
+        this.channelTb.splice(2, 1, cm);
         } else if (item.sourceType === '自然获客') {
-          nownaturalData.year.push(item);
-          this.channelTb.splice(3, 1, item.leadsNum);
+          // nownaturalData.year.push(item);
+          // this.channelTb.splice(3, 1, item.leadsNum);
+           if (item.probTag) {
+           zr += item.leadsNum;
+           nownaturalData.year.push(item);
+        }
+          this.channelTb.splice(3, 1, zr);
         }
       });
+      }
+     
       if (this.time.key === 'all') {
         this.handleClickChannel(0);
-        let arr = [];
-        this.contactRatiodata = this.allOperationData(nowcontactData.now);
-        this.verticalRatiodata = this.allOperationData(nowverticalMediaData.now);
-        this.outreachRatiodata = this.allOperationData(nowoutreachData.now);
-        this.naturalRatiodata = this.allOperationData(nownaturalData.now);
-        arr = [
-          this.contactRatiodata,
-          this.verticalRatiodata,
-          this.outreachRatiodata,
-          this.naturalRatiodata,
-        ];
-        this.datalist = arr;
+        // nowcontactData.now['type'] = '第一方触点';
+        // console.log(nowcontactData.now['type']);
+        // nowcontactData.now['type'] = '厂房分配';
+        // nowverticalMediaData.now['type'] = '垂媒';
+        // nowoutreachData.now['type'] = '外拓获客';
+        // nownaturalData.now['type'] = '自然获客';
+        let arr = [nowcontactData.now, nowverticalMediaData.now, nowoutreachData.now, nownaturalData.now].map( ( item, index ) => {
+           item.index = index;
+           return item;
+        });
+        arr.sort( ( a: any, b: any ) => {
+          if ( !a.length || !b.length) {
+            return 0;
+          }
+          return b[0].leadsNum - a[0].leadsNum;
+        });
+        this.datalist = arr.map( ( item, index) => {
+          return this.allOperationData(item);
+        });
+       
       } else {
         this.handleClickChannel(0);
-        let arr = [];
-        this.contactRatiodata = this.operationData(
-          nowcontactData.now,
-          nowcontactData.year,
-          nowcontactData.last
-        );
-        this.verticalRatiodata = this.operationData(
-          nowverticalMediaData.now,
-          nowverticalMediaData.year,
-          nowverticalMediaData.last
-        );
-        // console.log(this.verticalRatiodata);
-        this.outreachRatiodata = this.operationData(
-          nowoutreachData.now,
-          nowoutreachData.year,
-          nowoutreachData.last
-        );
-        this.naturalRatiodata = this.operationData(
-          nownaturalData.now,
-          nownaturalData.year,
-          nownaturalData.last
-        );
-        arr = [
-          this.contactRatiodata,
-          this.verticalRatiodata,
-          this.outreachRatiodata,
-          this.naturalRatiodata,
-        ];
-        this.datalist = arr;
+        let arr = [nowcontactData, nowverticalMediaData, nowoutreachData, nownaturalData]
+        .map( ( item, index) => {
+          item.index = index;
+          return item;
+        });
+        arr.sort( ( a: any, b: any ) => {
+          if ( !a.now.length || !b.now.length) {
+            return 0;
+          }
+          return b.now[0].leadsNum - a.now[0].leadsNum;
+        });
+    
+        this.datalist = arr.map( ( item: any, index) => {
+          return this.operationData(item.now, item.year, item.last, item.index, item.type);
+        });
         this.$nextTick( () => {
           this.winGuestChannelEchartInit();
         });
@@ -502,49 +571,125 @@ export default class GetChannl extends Vue {
       tb: '',
       hb: '',
       plan: '',
+      index: -1,
+      type: ''
     };
+    publics.index = now.index;
+    publics.type = now.type;
+    let totalLeadsNum = 0;
     if (now.length === 0) {
       return publics;
     } else {
-      let params = this.numberFormat(now[0].leadsNum);
+      now.forEach((item: any) => {
+        if (item.probTag) {
+          totalLeadsNum += item.leadsNum;
+        }
+      });
+      // let params = this.numberFormat(now[0].leadsNum);
+      let params = this.numberFormat(totalLeadsNum);
       publics.value = params.value;
       publics.unit = params.unit;
       publics.name = now[0].sourceType;
+
     }
     return publics;
   }
-
-  operationData(now: any, old: any, last: any) {
+ //获取目标，同比，环比阈值
+  getKthData() {
+    let params = {
+      module: '线索'
+    };
+    $api.DashboardApi.configuration(params).then((res: any) => {
+      this.actualData = res.datas[0];
+    });
+  }
+  operationData(now: any, old: any, last: any, index: number, type: string) {
     let publics: any = {
       value: '',
       unit: '',
       tb: '',
       hb: '',
       plan: '',
+      index: -1,
+      type: '',
+      color: 0,
+      hbcolor: 0
     };
+    publics.index = index;
+    publics.type = type;
+    let totalLeadsNum = 0, oldleadNum = 0, lastleadNum = 0;
     if (now.length === 0) {
       return publics;
     } else {
-      let params = this.numberFormat(now[0].leadsNum);
-      publics.name = now[0].sourceType;
+        now.forEach((item: any) => {
+        if (item.probTag) {
+          totalLeadsNum += item.leadsNum;
+        }
+      });
+      // let params = this.numberFormat(now[0].leadsNum);
+      let params = this.numberFormat(totalLeadsNum);
       publics.value = params.value;
       publics.unit = params.unit;
+      publics.name = now[0].sourceType;
+
+      // let params = this.numberFormat(now[0].leadsNum);
+      // publics.name = now[0].sourceType;
+      // publics.value = params.value;
+      // publics.unit = params.unit;
     }
     if (old.length === 0) {
       publics.tb = '';
     } else {
-      publics.tb = calculation(now[0].leadsNum, old[0].leadsNum);
+     
+       old.forEach((item: any) => {
+        if (item.probTag) {
+          oldleadNum += item.leadsNum;
+        }
+       });
+        
+      publics.tb = calculation(totalLeadsNum, oldleadNum);
+       if (this.actualData) {
+                publics.color = decideColor(publics.tb, this.actualData.lastAlarmCycle, this.actualData.lastEarlyWarCycle, this.actualData.lastAlarmCycleSymbol);
+                } else {
+                 publics.color = 0;
+                }
     }
     if (last.length === 0) {
       publics.hb = '';
     } else {
+         last.forEach((item: any) => {
+        if (item.probTag) {
+          lastleadNum += item.leadsNum;
+        }
+       });
       if (this.time.key === 'year') {
+      
+        // publics.hb = publics.tb = calculation(
+        //   now[0].leadsNum,
+        //   last[0].leadsNum
+        // );
         publics.hb = publics.tb = calculation(
-          now[0].leadsNum,
-          last[0].leadsNum
+         totalLeadsNum,
+         lastleadNum
         );
+          if (this.actualData) {
+                 publics.color = decideColor(publics.tb, this.actualData.lastAlarmCycle, this.actualData.lastEarlyWarCycle, this.actualData.lastAlarmCycleSymbol);
+              publics.hbcolor = decideColor(publics.hb, this.actualData.ringAlarmCycle, this.actualData.ringEarlyWarCycle, this.actualData.ringAlarmCycleSymbol);
+               } else {
+                 publics.color = 0;
+                  publics.hbcolor = 0;
+                }
+       
+
       } else {
-        publics.hb = calculation(now[0].leadsNum, last[0].leadsNum);
+        // publics.hb = calculation(now[0].leadsNum, last[0].leadsNum);
+        publics.hb = calculation( totalLeadsNum, lastleadNum);
+
+         if (this.actualData) {
+                publics.hbcolor = decideColor(publics.hb, this.actualData.ringAlarmCycle, this.actualData.ringEarlyWarCycle, this.actualData.ringAlarmCycleSymbol);
+                } else {
+                 publics.hbcolor = 0;
+                }
       }
     }
     return publics;
@@ -574,6 +719,7 @@ export default class GetChannl extends Vue {
 
   // 上树初始化柱状图Echart
   private mounted() {
+    this.getKthData();
     this.getProportionData();     //线上线下占比
     this.getChannelData();        //柱状图上的数据
     this.getEchartData();         //柱状图数据
@@ -591,35 +737,66 @@ export default class GetChannl extends Vue {
     if (Object.keys(this.currentArea)[0] !== 'all') {
       params = Object.assign(params, this.currentArea);
     }
-    $api.DashboardApi.oppor(params).then((res: any) => {
+    // $api.DashboardApi.oppor(params).then((res: any) => {
+    $api.DashboardApi.getData(params).then((res: any) => {
+        this.hlevel = new Array(4).fill(0);
+        this.alevel = new Array(4).fill(0);
+        this.blevel = new Array(4).fill(0);
+        this.flevel = new Array(4).fill(0);
       if (res.now.length > 0) {
         res.now.map( (item: any) => {
-          if (item.bizModuleName === '第一触电') {
-            this.hlevel.splice(0, 1, item.alevel);
-            this.alevel.splice(0, 1, item.alevel);
-            this.blevel.splice(0, 1, item.blevel);
-            this.flevel.splice(0, 1, item.blevel);
+          if (item.sourceType === '第一方触点' || item.sourceType === '厂方分配') {
+            // this.hlevel.splice(0, 1, item.alevel);
+            // this.alevel.splice(0, 1, item.alevel);
+            // this.blevel.splice(0, 1, item.blevel);
+            // this.flevel.splice(0, 1, item.blevel);
+            switch (item.probTag) {
+              case '高': this.hlevel.splice(0, 1, item.leadsNum); break;
+              case '中': this.alevel.splice(0, 1, item.leadsNum); break;
+              case '低': this.blevel.splice(0, 1, item.leadsNum); break;
+              case '战败': this.flevel.splice(0, 1, item.leadsNum); break;
+            }
           }
-          if (item.bizModuleName === '垂媒') {
-            this.hlevel.splice(1, 1, item.alevel);
-            this.alevel.splice(1, 1, item.alevel);
-            this.blevel.splice(1, 1, item.blevel);
-            this.flevel.splice(1, 1, item.blevel);
+          // if (item.bizModuleName === '垂媒') {
+             if (item.sourceType === '垂媒') {
+            // this.hlevel.splice(1, 1, item.alevel);
+            // this.alevel.splice(1, 1, item.alevel);
+            // this.blevel.splice(1, 1, item.blevel);
+            // this.flevel.splice(1, 1, item.blevel);
+              switch (item.probTag) {
+              case '高': this.hlevel.splice(1, 1, item.leadsNum); break;
+              case '中': this.alevel.splice(1, 1, item.leadsNum); break;
+              case '低': this.blevel.splice(1, 1, item.leadsNum); break;
+              case '战败': this.flevel.splice(1, 1, item.leadsNum); break;
+            }
           }
-          if (item.bizModuleName === '外拓获客') {
-            this.hlevel.splice(2, 1, item.alevel);
-            this.alevel.splice(2, 1, item.alevel);
-            this.blevel.splice(2, 1, item.blevel);
-            this.flevel.splice(2, 1, item.blevel);
+          if (item.sourceType === '外拓客户' || item.sourceType === '外拓获客') {
+            // this.hlevel.splice(2, 1, item.alevel);
+            // this.alevel.splice(2, 1, item.alevel);
+            // this.blevel.splice(2, 1, item.blevel);
+            // this.flevel.splice(2, 1, item.blevel);
+              switch (item.probTag) {
+              case '高': this.hlevel.splice(2, 1, item.leadsNum); break;
+              case '中': this.alevel.splice(2, 1, item.leadsNum); break;
+              case '低': this.blevel.splice(2, 1, item.leadsNum); break;
+              case '战败': this.flevel.splice(2, 1, item.leadsNum); break;
+            }
           }
-          if (item.bizModuleName === '自然获客') {
-            this.hlevel.splice(3, 1, item.alevel);
-            this.alevel.splice(3, 1, item.alevel);
-            this.blevel.splice(3, 1, item.blevel);
-            this.flevel.splice(3, 1, item.blevel);
+          if (item.sourceType === '自然获客') {
+            // this.hlevel.splice(3, 1, item.alevel);
+            // this.alevel.splice(3, 1, item.alevel);
+            // this.blevel.splice(3, 1, item.blevel);
+            // this.flevel.splice(3, 1, item.blevel);
+              switch (item.probTag) {
+              case '高': this.hlevel.splice(3, 1, item.leadsNum); break;
+              case '中': this.alevel.splice(3, 1, item.leadsNum); break;
+              case '低': this.blevel.splice(3, 1, item.leadsNum); break;
+              case '战败': this.flevel.splice(3, 1, item.leadsNum); break;
+            }
           }
         });
-        this.heightPrefer = this.hlevel;
+      }
+       this.heightPrefer = this.hlevel;
         this.midPrefer = this.alevel;
         this.lowPrefer = this.blevel;
         this.defeat = this.flevel;
@@ -627,18 +804,39 @@ export default class GetChannl extends Vue {
         this.$nextTick( () => {
           this.winGuestChannelEchartInit();
         });
-
-      }
     });
   }
 
   // 柱状图初始化执行函数
   public winGuestChannelEchartInit() {
+    if (!this.$refs.ProportionOfChannel) {
+      return false;
+    }
     this.channelEchart = this.$echarts.init(this.$refs.ProportionOfChannel);
     this.channelBarEchart();
   }
   // 柱状图Echart初始化
   public channelBarEchart() {
+    const name: any = [];
+    const channelXaxisData: any = [];
+    const heightPrefer: any = [];
+    const midPrefer: any = [];
+    const lowPrefer: any = [];
+    const defeat: any = [];
+    const anyPrefer: any = [];
+    this.datalist.forEach( (item: any ) => {
+      name.push( this.name[item.index]);
+     channelXaxisData.push ( this.channelXaxisData[item.index]);
+     heightPrefer.push ( this.heightPrefer[item.index]);
+     midPrefer.push ( this.midPrefer[item.index]);
+     lowPrefer.push ( this.lowPrefer[item.index]);
+     defeat.push ( this.defeat[item.index]);
+     anyPrefer.push ( this.anyPrefer[item.index]);      
+
+    });
+    if ( name.length) {
+        this.name = name;
+    }
     this.channelEchart.clear();
     let options: any = {
       color: this.channelLegendColor,
@@ -670,7 +868,7 @@ export default class GetChannl extends Vue {
         {
           show: false,
           type: 'category',
-          data: this.channelXaxisData,
+          data: channelXaxisData,
           axisTick: {
             show: false,
           },
@@ -699,8 +897,8 @@ export default class GetChannl extends Vue {
           name: '高意向-H',
           type: 'bar',
           stack: '广告',
-          data: this.heightPrefer,
-          showBackground: true,
+          data: heightPrefer,
+          showBackground: false,
           showBackgroundStyle: {
             color: '#021722',
           },
@@ -715,14 +913,14 @@ export default class GetChannl extends Vue {
           name: '中意向-A',
           type: 'bar',
           stack: '广告',
-          data: this.midPrefer,
-          // showBackground: true,
+          data: midPrefer,
           barWidth: 102,
           itemStyle: {
             normal: {
               color: '#4EDFD1',
             },
           },
+          showBackground: false,
           showBackgroundStyle: {
             color: '#021722',
           },
@@ -731,39 +929,40 @@ export default class GetChannl extends Vue {
           name: '低意向-B',
           type: 'bar',
           stack: '广告',
-          data: this.lowPrefer,
-          // showBackground: true,
+          data: lowPrefer,
           barWidth: 102,
           itemStyle: {
             normal: {
               color: '#EBCD52',
             },
           },
+          showBackground: false,
           showBackgroundStyle: {
             color: '#021722',
           },
         },
-        {
-          name: '战败-F',
-          type: 'bar',
-          stack: '广告',
-          data: this.defeat,
-          // showBackground: true,
-          barWidth: 102,
-          itemStyle: {
-            normal: {
-              color: '#F27A7A',
-            },
-          },
-          showBackgroundStyle: {
-            color: '#021722',
-          },
-        },
+        // {
+        //   name: '战败-F',
+        //   type: 'bar',
+        //   stack: '广告',
+        //   data: defeat,
+        //   // showBackground: true,
+        //   barWidth: 102,
+        //   itemStyle: {
+        //     normal: {
+        //       color: '#F27A7A',
+        //     },
+        //   },
+        //   showBackground: false,
+        //   showBackgroundStyle: {
+        //     color: '#021722',
+        //   },
+        // },
         {
           name: `${this.tableMenu[this.activeClassIndex]}意向`,
           type: 'bar',
-          data: this.anyPrefer,
-          showBackground: true,
+          data: anyPrefer,
+          showBackground: false,
           barWidth: 102,
           itemStyle: {
             normal: {
@@ -865,28 +1064,25 @@ export default class GetChannl extends Vue {
 
   // 点击echarts图的函数
   public motalName: string = '';
-  public handleEchartOpen(index: any) {
+  public handleEchartOpen(index: any, item: any) {
     this.getClueData(index);
-    let whichWay: any;
-    switch (index) {
-      case 0:
-        whichWay = '第一方触点'; break;
-      case 1:
-        whichWay = '垂媒'; break;
-      case 2:
-        whichWay = '外拓获客'; break;
-      case 3:
-        whichWay = '自然获客'; break;
-    }
-    if (index === 0) {
-      this.motalName = this.name[0].name;
-    } else {
-      this.motalName = whichWay;
-    }
+    // let whichWay: any;
+    // switch (index) {
+    //   case 0:
+    //     whichWay = '第一方触点'; break;
+    //   case 1:
+    //     whichWay = '垂媒'; break;
+    //   case 2:
+    //     whichWay = '外拓获客'; break;
+    //   case 3:
+    //     whichWay = '自然获客'; break;
+    // }
+
+    this.motalName = item.type === '第一方触点' ? '厂方分配' : item.type;
     let params = {
       brandId: this.brandId,
       type: this.time.key,
-      sourceType: whichWay,
+      sourceType: item.type === '外拓获客' ? '外拓客户' : item.type,
     };
     if (Object.keys(this.currentArea)[0] !== 'all') {
       params = Object.assign(params, this.currentArea);
@@ -899,8 +1095,6 @@ export default class GetChannl extends Vue {
       if (this.time.key === 'year') {
         this.assignmentYear(res);
         this.mergeLeads();
-        // console.log(this.nowMotal, this.lyMotal, this.lastMotal);
-        // console.log(this.actual, this.hb, this.tb);
         let arr = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
         this.channelMotalXaxisData = arr;
       }
@@ -951,8 +1145,6 @@ export default class GetChannl extends Vue {
       if (this.time.key === 'week') {
         this.assignmentDayWeek(res);
         this.mergeLeads();
-        // console.log(this.nowMotal, this.lyMotal, this.lastMotal);
-        // console.log(this.actual, this.hb, this.tb);
         let arr = ['周一', '周二', '周三', '周四', '周五', '周六' , '周日'];
         this.channelMotalXaxisData = arr;
       }
@@ -976,12 +1168,7 @@ export default class GetChannl extends Vue {
         if (res.last.length === 0 && res.lsatYear.length === 0 && res.now.length > 0) {
           this.arrangeAll(res.now, this.channelMotalXaxisData);
         }
-        // console.log(this.nowMotal, this.lyMotal, this.lastMotal);
       }
-      // this.motalArr = [];
-      // for (let i = 0; i < 5; i++) {
-      //   this.motalArr.push(this.aims);
-      // }
       this.$nextTick(() => {
         this.winGuestMotalEchartInit();
       });
@@ -995,7 +1182,6 @@ export default class GetChannl extends Vue {
 
   // 获取线索数据
   getClueData(index: any) {
-    // console.log(this.datalist[index]);
     this.winGuestQuality.searchTotal.value = this.datalist[index].value;
     this.winGuestQuality.searchTotal.unit = this.datalist[index].unit;
   }
@@ -1263,13 +1449,31 @@ export default class GetChannl extends Vue {
           z-index: 100;
           p {
             .iconshangsheng {
-              color: #35e967;
+              // color: #35e967;
               font-size: 24px;
             }
             .iconxiajiang {
-              color: #e80404;
+              // color: #e80404;
               font-size: 24px;
             }
+             .red{
+              color: rgba(255, 113, 118, 1);
+              font-size: 24px;
+              
+            }
+              .green{
+                color: rgba(86, 216, 132, 1);
+                font-size: 24px;
+              }
+              .yellow {
+                      color: #FFC72F  ;
+                      font-size: 24px;
+                    }
+
+              .white {
+                      color: #ffffff;
+                      font-size: 24px;
+                    }
           }
         }
       }

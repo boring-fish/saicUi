@@ -6,6 +6,9 @@
             <span class="iconfont iconzuojiantou"></span>
             <span class="button-text">返回</span>
           </el-button>
+          <div class="iconClose" @click="logout">
+            <div class="iconfont iconzhuxiaodenglu"></div>
+          </div>  
         </header>
         <main class="main">
           <router-view></router-view>
@@ -30,6 +33,14 @@ export default class SettingIndex extends Vue {
     this.$router.go(-1);
   }
 
+  logout() {
+    $api.DashboardApi.logout().then((res: any) => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userInfo');
+      console.log(res, '退出');
+      window.location.replace(res.remoteLogoutUri);
+    });
+  }
 }
 </script>
 
@@ -39,8 +50,27 @@ export default class SettingIndex extends Vue {
   height: 100%;
   .hearder{
     height: 160px;
-    padding: 40px 0 40px 60px;
+    padding: 40px 40px 40px 60px;
+    position: relative;
     background-color: $box-bg-primary;
+    display: flex;
+    .iconClose {
+      border-radius: 16px;
+      width: 50px;
+      height: 52px;
+      position: absolute;
+      right: 77px;
+      top: 50px;
+      .iconfont {
+        width: 50px;
+        height: 52px;
+        color: #99a2a6;
+        font-size: 52px;
+        position: absolute;
+        top: 0;right: 0;bottom: 0;left: 0;
+        margin: auto;
+      }
+    }
     .el-button--primary{
       width: 190px;
       height: 80px;
@@ -60,8 +90,7 @@ export default class SettingIndex extends Vue {
   }
   .main {
     // padding: 40px;
-    height: 100%;
-   
+    height: calc(100% - 240px);
   }
 }
 

@@ -7,7 +7,7 @@
     <div class="ratioTb putlicStyle">
       <div class="publicMarginRight">同比</div>
 
-      <div v-if="ratioData.tb" :class="(ratioData.tb).startsWith('-')? 'red' : 'green'">
+      <div v-if="ratioData.tb" :class="tbValue === 1 ? 'red' : tbValue === 2 ? 'yellow' : tbValue === 3 ? 'green' : 'white'">
          <span class="iconfont iconxiajiang" v-if="(ratioData.tb).startsWith('-')"></span>
          <span class="iconfont iconshangsheng" v-else></span>
         <span class="publicMarginLeft">{{ratioData.tb | ratioNegative}}</span>
@@ -17,7 +17,7 @@
 
     <div class="ratioHb putlicStyle">
       <div class="publicMarginRight">环比</div>
-      <div v-if="ratioData.hb" :class="(ratioData.hb).startsWith('-')? 'red' : 'green'">
+      <div v-if="ratioData.hb" :class="hbValue === 1 ? 'red' : hbValue === 2 ? 'yellow' : hbValue === 3 ? 'green' : 'white'">
         <span class="iconfont iconxiajiang" v-if="(ratioData.hb).startsWith('-')"></span>
          <span class="iconfont iconshangsheng" v-else></span>
         <span class="publicMarginLeft">{{ratioData.hb | ratioNegative}}</span>
@@ -32,7 +32,7 @@
 
     <div class="ratioFinished putlicStyle">
       <span class="publicMagrinStyle enlarge">完成率</span>
-      <span class="enlarge">{{ratioData.finished ? ratioData.finished : '—' }}</span>
+      <span class="enlarge" :class="aimValue === 1 ? 'red' : aimValue === 2 ? 'yellow' : aimValue === 3 ? 'green' : 'white'">{{ratioData.finished ? ratioData.finished : '—' }}</span>
     </div>
     <div class="deduplication lastStyle" v-show="showProportion">
       <span class="publicMagrinStyle">去重线索占比</span>
@@ -75,6 +75,22 @@ export default class Ratio extends Vue {
     required: false,
     default: true
   }) showProportion?: Boolean;
+
+  @Prop({
+    required: false,
+    default: 0
+  }) tbValue !: number;
+
+    @Prop({
+    required: false,
+    default: 0
+  }) hbValue !: number;
+
+    @Prop({
+    required: false,
+    default: 0
+  }) aimValue !: number;
+
 
   created() {
     //
@@ -120,11 +136,16 @@ export default class Ratio extends Vue {
       }
 
     .green{
-     color:#35E967
+      color:#56D884;
     }
-
     .red{
-    color: #E80404;
+      color: #FF7176;
+    }
+    .yellow {
+      color: #FFC72F;
+    }
+    .white {
+      color: #fff;
     }
   .ratioValue{
     font-size: 34px;

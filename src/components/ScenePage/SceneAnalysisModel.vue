@@ -4,7 +4,7 @@
     <span class="border border-top-right"></span>
     <span class="border border-bottom-left"></span>
     <span class="border border-bottom-right"></span>
-    <SceneHeader :title="title"></SceneHeader>
+    <!-- <SceneHeader :title="title"></SceneHeader>
     <div class="sceneAnalysisModelContent">
       <div class="typeModel" v-for="(item,index) in analysisModelList" :key="index">
         <p class="analysissum">{{item.sumwz}}</p>
@@ -20,7 +20,7 @@
           >{{item.rate}}%</span>
         </p>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -109,6 +109,9 @@ export default class SceneAnalysisModel extends Vue {
 .sceneAnalysisModel-warp {
   width: 1048px;
   height: 100%;
+   background: url('../../assets/img/expect.png') no-repeat;
+    background-position: 55px 45px;
+    background-size: 85% 80%;
   // background: #00263e;
   .sceneAnalysisModelContent {
     width: 100%;

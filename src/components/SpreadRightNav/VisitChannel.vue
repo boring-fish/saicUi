@@ -18,7 +18,8 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import { calculation, numberFormat } from '@/utils/utils.ts';
+import { calculation, numberFormat, decideColor} from '@/utils/utils.ts';
+
 
 interface TIMERANGE {
   key: string;
@@ -68,15 +69,15 @@ export default class VisitChannel extends Vue {
     this.getspreadChannelData();
     this.activeClassIndex = 0;
   }
-
+  actualData: any = {};
   visitPlanDataset: object = {};
   visitTbDataset: object = {};
   visitHbDataset: object = {};
-  // seriesChannel:Array<any>=[];
   activeClassIndex: number = 0;
   public visitbutton: any = ['同比', '环比'];
   public $echarts: any;
   private mounted() {
+    this.getKthData();
     this.getspreadChannelData();
   }
 
@@ -95,7 +96,7 @@ export default class VisitChannel extends Vue {
         'k' +
         res.xdatarate[index] +
         'k' +
-        res.xdatasj[index];
+        res.xdatasj[index] + 'k' + res.xcolor[index];
     });
     setTimeout(() => {
       let options: any = {
@@ -117,27 +118,30 @@ export default class VisitChannel extends Vue {
             color: 'rgba(255,255,255,0.6)'
           }
         },
-        dataZoom: [
-          {
-            type: 'slider',
-            realtime: false,
-            show: true,
-            xAxisIndex: [0],
-            moveOnMouseMove: true,
-            handleSize: 8,
-            left: '4%',
-            right: '4%',
-            bottom: -5,
+     
+           dataZoom: {
             start: 0,
-            end: res.jl
+            end: res.visitSeries.length <= 4 ? 100 : Math.round(4 / res.visitSeries.length * 100),
+            type: 'slider',
+            height: 40,
+            fillerColor: '#48558B' ,
+            borderColor: 'none',
+            bottom: 10,
+            endValue: 4,
+            showDetail: false,
+             maxValueSpan: 5,
+            handleStyle: {
+              opacity: 0,
+            },
+            dataBackground: {
+              lineStyle: {
+                opacity: 0,
+              },
+              areaStyle: {
+                opacity: 0,
+              }
+            }
           },
-          {
-            type: 'inside',
-            xAxisIndex: [0],
-            start: 1,
-            end: 40
-          }
-        ],
         xAxis: {
           type: 'category',
           data: res.xdata,
@@ -156,6 +160,7 @@ export default class VisitChannel extends Vue {
               let paramsarr: any = params.split('k');
               let paramsarrunit = numberFormat(paramsarr[1]).unit;
               paramsarr[1] = numberFormat(paramsarr[1]).value;
+         
               let str =
                 '{a|' +
                 paramsarr[0] +
@@ -168,26 +173,29 @@ export default class VisitChannel extends Vue {
                 '}';
               if (paramsarr[3] !== '——') {
                 if (paramsarr[4] === '1') {
-                  str +=
-                    '  {picture|}    {per|' +
-                    paramsarr[3] +
-                    '}\n\n{f|' +
-                    '' +
-                    '}';
+                  switch (paramsarr[5]) {
+                    case '1' : str += '  {xred|}    {perred|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                    case '2' : str += '  {xyellow|}    {peryellow|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                    case '3' : str += '  {xgreen|}    {pergreen|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                    case 'undefined':
+                    case '0' : str += '  {xwhite|}    {perwhite|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                  }
+
                 } else if (paramsarr[4] === '0') {
-                  str +=
-                    '  {picture1|}   {per1|' +
-                    paramsarr[3] +
-                    '}\n\n{f|' +
-                    '' +
-                    '}';
+                   switch (paramsarr[5]) {
+                    case '1' : str += '  {sred|}    {perred|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                    case '2' : str += '  {syellow|}    {peryellow|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                    case '3' : str += '  {sgreen|}    {pergreen|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                    case 'undefined':
+                    case '0' : str += '  {swhite|}    {perwhite|' + paramsarr[3] + '}\n\n{f|' + '' + '}'; break;
+                  }
+
                 } else {
                   str += '   {per2|' + '——' + '}\n\n{f|' + '' + '}';
                 }
               } else {
                 str += '   {per2|' + paramsarr[3] + '}\n\n{f|' + '' + '}';
               }
-
               return str;
             },
             rich: {
@@ -195,8 +203,9 @@ export default class VisitChannel extends Vue {
                 color: 'rgba(248,249,249,1)',
                 fontSize: 32,
                 align: 'left',
-                fontWeight: '400'
+                fontWeight: '400',
               },
+             
               b: {
                 color: 'rgba(255,255,255,1)',
                 fontSize: 68,
@@ -219,30 +228,83 @@ export default class VisitChannel extends Vue {
                 align: 'left',
                 width: 200
               },
-              picture: {
+              xgreen: {
                 backgroundColor: {
-                  image: require('../../assets/img/xj.png')
+                  image: require('../../assets/iconImg/下降-green.png')
                 },
                 height: 20,
                 align: 'left'
               },
-              per: {
+               xred: {
+                 backgroundColor: {
+                  image: require('../../assets/iconImg/下降-red.png')
+                },
+                height: 20,
+                align: 'left'
+              },
+                xyellow: {
+                 backgroundColor: {
+                  image: require('../../assets/iconImg/下降-yellow.png')
+                },
+                height: 20,
+                align: 'left'
+              },
+                xwhite: {
+                 backgroundColor: {
+                  image: require('../../assets/iconImg/下降-white.png')
+                },
+                height: 20,
+                align: 'left'
+              },
+              perred: {
                 color: 'rgba(255,113,118,1)',
                 fontWeight: '400',
                 fontSize: 24,
                 align: 'left'
               },
-              picture1: {
-                backgroundColor: {
-                  image: require('../../assets/img/ss.png')
+              sgreen: {
+                 backgroundColor: {
+                  image: require('../../assets/iconImg/上升-green.png')
                 },
                 height: 20,
                 align: 'left'
               },
-              per1: {
+              sred: {
+                 backgroundColor: {
+                  image: require('../../assets/iconImg/上升-red.png')
+                },
+                height: 20,
+                align: 'left'
+              },
+                syellow: {
+                 backgroundColor: {
+                  image: require('../../assets/iconImg/上升-yellow.png')
+                },
+                height: 20,
+                align: 'left'
+              },
+               swhite: {
+                 backgroundColor: {
+                  image: require('../../assets/iconImg/上升-white.png')
+                },
+                height: 20,
+                align: 'left'
+              },
+              pergreen: {
                 color: 'rgba(86,216,132,1)',
                 fontWeight: '400',
-
+                fontSize: 24,
+                align: 'left'
+              },
+              peryellow: {
+                color: '#FFC72F',
+                fontWeight: '400',
+                fontSize: 24,
+                align: 'left'
+              },
+              perwhite: {
+                color: 'white',
+                fontWeight: '400',
                 fontSize: 24,
                 align: 'left'
               },
@@ -291,6 +353,15 @@ export default class VisitChannel extends Vue {
         break;
     }
   }
+   //获取目标，同比，环比阈值
+  getKthData() {
+    let params = {
+      module: '兴趣'
+    };
+    $api.DashboardApi.configuration(params).then((res: any) => {
+      this.actualData = res.datas[0];
+    });
+  }
   //各渠道访客量数据
   getspreadChannelData() {
     let params = {
@@ -303,43 +374,36 @@ export default class VisitChannel extends Vue {
     }
     $api.DashboardApi.spreadData2(params)
       .then((res: any) => {
+        //同比，环比渠道数组
         let tbchannel: Array<any> = [],
-          planchannel: Array<any> = [],
+          // planchannel: Array<any> = [],
           hbchannel: Array<any> = [],
           // planexposure:Array<any> = [],
+         //访客量
           exposure: Array<any> = [],
           // planexposure:Array<any> = [],
           lastExposure: Array<any> = [],
           lastyearExposure: Array<any> = [],
-          xplanrate: Array<any> = [],
+          //同比，环比数组
+          // xplanrate: Array<any> = [],
           xhbrate: Array<any> = [],
           xtbrate: Array<any> = [],
-          xplansj: Array<any> = [],
+          //同比，环比上升，下降状态数组
+          // xplansj: Array<any> = [],
           xhbsj: Array<any> = [],
           xtbsj: Array<any> = [],
-          jl: any = 100;
+          //同比，环比报警预警数组
+          xhbColor: Array<any> = [],
+          xtbColor: Array<any> = [];
+          // jl: any = 100;
+   
         if (res.now.length !== 0) {
-          if (6 < res.now.length && res.now.length <= 8) {
-            jl = 65;
-          }
-          if (8 < res.now.length && res.now.length <= 13) {
-            jl = 45;
-          }
-          if (13 < res.now.length && res.now.length <= 19) {
-            jl = 30;
-          }
-          if (19 < res.now.length && res.now.length <= 30) {
-            jl = 20;
-          }
-          if (30 < res.now.length && res.now.length <= 40) {
-            jl = 10;
-          }
           res.now.sort(function(a: any, b: any) {
             return b.exposure - a.exposure;
           });
           res.now.forEach((item: any, index: any) => {
             tbchannel.push(item.channel);
-            planchannel.push(item.channel);
+            // planchannel.push(item.channel);
             hbchannel.push(item.channel);
             let totalClient = item.newVisitors + item.oldVisitors;
             exposure.push(totalClient);
@@ -349,6 +413,7 @@ export default class VisitChannel extends Vue {
             xhbrate.push('——');
             xhbsj.push('——');
             xtbsj.push('——');
+            
           });
         }
         //同比
@@ -359,6 +424,11 @@ export default class VisitChannel extends Vue {
               if (res.lsatYear[i].channel === res.now[j].channel) {
                 lastyearExposure[j] = res.lsatYear[i].exposure;
                 tb = calculation(res.now[j].exposure, res.lsatYear[i].exposure);
+                if (this.actualData) {
+                xtbColor[j] = decideColor(tb, this.actualData.lastAlarmCycle, this.actualData.lastEarlyWarCycle, this.actualData.lastAlarmCycleSymbol);
+                } else {
+                xtbColor[j] = 0;
+                }
                 if (tb === '') {
                   xtbsj[j] = '——';
                 } else if (tb.startsWith('-')) {
@@ -368,7 +438,7 @@ export default class VisitChannel extends Vue {
                 }
                 xtbrate[j] = this.negative(tb);
               }
-              xplanrate.push('——');
+              // xplanrate.push('——');
             }
           }
         }
@@ -380,6 +450,11 @@ export default class VisitChannel extends Vue {
               if (res.last[i].channel === res.now[j].channel) {
                 lastExposure[j] = res.last[i].exposure;
                 hb = calculation(res.now[j].exposure, res.last[i].exposure);
+                if (this.actualData) {
+                  xhbColor[j] = decideColor(hb, this.actualData.ringAlarmCycle, this.actualData.ringEarlyWarCycle, this.actualData.ringAlarmCycleSymbol);
+               } else {
+                  xhbColor[j] = 0;
+                }
                 if (hb === '') {
                   xhbsj[j] = '——';
                 } else if (hb.startsWith('-')) {
@@ -389,7 +464,7 @@ export default class VisitChannel extends Vue {
                 }
                 xhbrate[j] = this.negative(hb);
               }
-              xplanrate.push('——');
+              // xplanrate.push('——');
             }
           }
         }
@@ -431,7 +506,8 @@ export default class VisitChannel extends Vue {
           xdata: tbchannel,
           xdatarate: xtbrate,
           xdatasj: xtbsj,
-          jl: jl,
+          xcolor: xtbColor,
+          // jl: jl,
           visitSeries: [
             {
               data: exposure,
@@ -462,7 +538,8 @@ export default class VisitChannel extends Vue {
           xdata: hbchannel,
           xdatarate: xhbrate,
           xdatasj: xhbsj,
-          jl: jl,
+          xcolor: xhbColor,
+          // jl: jl,
           visitSeries: [
             {
               data: exposure,

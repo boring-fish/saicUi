@@ -1,8 +1,46 @@
 <template>
   <div class="sceneAlgorithmModel-wrap">
     <SceneHeader :title="title"></SceneHeader>
-    <div id="sceneAlgorithmModelClient"></div>
-    <div id="sceneAlgorithmModelTab"></div>
+    <div class="sceneAlgorithmModelClient">
+       <div class="prefers">
+         <span class="sceneTextTitle">用户偏好top3</span>
+           <ul class="sceneTextTitlePrefers">
+            <li v-for="(item,index) in prefers" :key="index">
+              <span class="sceneText"> {{item.text}}</span><span class="sceneValue">{{item.value}}</span>
+            </li>
+           </ul>
+       </div>
+       <div class="advice">
+         <span class="sceneTextTitle">购车意向</span>
+          <ul class="sceneTextTitlePrefers">
+            <li >
+              <span class=" sceneTextCar">意向车型:</span><span class="sceneValue">{{adviceData.carType}}</span>
+            </li>
+             <li >
+              <span class=" sceneTextCar">意向等级:</span>
+              <span>
+                <span class="sceneTextCar">高:</span><span class="sceneValue">{{adviceData.rank.top}}</span>
+                <span class="sceneTextCar">中:</span><span class="sceneValue">{{adviceData.rank.middle}}</span>
+              </span>
+              <p class="adviceRand">
+                <span class="sceneTextCar">低:</span><span class="sceneValue">{{adviceData.rank.down}}</span>
+                <!-- <span class="sceneText">极低:</span><span class="sceneValue">{{adviceData.rank.relDown}}</span> -->
+              </p>
+            </li>
+           </ul>
+       </div>
+       <div class="status">
+          <span class="sceneTextTitle">购车阶段</span>
+           <ul class="sceneTextTitlePrefers">
+            <li v-for="(item,index) in statusData" :key="index">
+              <span class="sceneText sceneStatus"> {{item.text}}</span><span class="sceneValue">{{item.value}}</span>
+            </li>
+           </ul>
+       </div>
+
+
+    </div>
+    <div class="sceneAlgorithmModelTab"></div>
   </div>
 </template>
 
@@ -16,191 +54,77 @@ import SceneHeader from './SceneHeader.vue';
   }
 })
 export default class SceneAlgorithmModel extends Vue {
-  title: String = '算法模型';
-  algorithClient: object = {
-    xClientdata: ['用户推荐模型',
-            '销售过程质检模型',
-            '个性化内容推荐模型',
-            '客户跟进节奏模型',
-            '销售代表最优匹配模型',
-            '销售过程话术质检模型',
-            '销售话术推荐模型',
-            '权益激励匹配模型'],
-    clientseriesData: [120, 200, 150, 80, 70, 110, 130, 100]
-
-  };
-   algorithTab: object = {
-    xTabdata: [
-          '用户购买意向度',
-          '用户购买意向偏好',
-          '用户满意度评价',
-          '用户内容偏好',
-          '用户渠道形式偏好',
-          '销售代表能力属性',
-          '用户权益偏好'
-        ],
-    tabseriesData: [120, 200, 150, 80, 70, 110, 130]
-
-  };
-  public $echarts: any;
+ title: String = '用户画像聚类';
+ prefers: any = [];
+ adviceData: any = {
+   carType: '',
+   rank: {}
+ };
+ statusData: any = [];
   mounted() {
-    this.sceneClientinit(this.algorithClient);
-    this.sceneTabinit(this.algorithTab);
+    this.getlabelData();
   }
-  public sceneClientinit(res: any): void {
-    const sceneAlgorithmModelClient = document.getElementById(
-      'sceneAlgorithmModelClient'
-    );
-    const sceneAlgorithmModelClientchart: any = this.$echarts.init(
-      sceneAlgorithmModelClient
-    );
-    setTimeout(() => {
-      let options: any = {
-        color: ['rgba(78,223,209,1)'],
-        title: {
-          show: true,
-          text: '算法模型触发的客户数',
-          x: 'center',
-          textStyle: {
-            fontSize: 28,
-            color: '#ffffff'
+
+  getlabelData() {
+    $api.DashboardApi.getlabelData().then((res: any) => {
+      let Preference: any = [];
+      let intentionTop: any = [];
+      let intentionBottom: any = [];
+      let status: any = [];
+      res.forEach((item: any) => {
+          if (item.falg === 1) {
+            Preference.push({
+              text: item.name,
+              value: (item.valueRate * 100).toFixed(2) + '%'
+            });
+            
+          } else if (item.falg === 2) {
+              intentionTop.push(item.name);
+          } else if (item.falg === 3) {
+              intentionBottom.push({
+              text: item.name,
+              value: (item.valueRate * 100).toFixed(2) + '%'
+            });
+          } else if (item.falg === 4) {
+             status.push({
+              text:  item.name ,
+              value: item.valueRate
+            });
           }
-        },
-        xAxis: {
-          show: true,
-          offset: 20,
-          type: 'category',
-          // margin:'20',
-          data: res.xClientdata,
-          axisLine: {
-            lineStyle: {
-              fontWeight: 400,
-              color: 'rgba(255,255,255,0.6)'
+      });
+      let buyA = '', buyB = 0, buyC = '';
+         status.forEach((statusitem: any) => {
+                 if (statusitem.text === '10') {
+              buyA = (statusitem.value * 100).toFixed(2) + '%';
+            } else if (statusitem.text === '90') {
+               buyC = (statusitem.value * 100).toFixed(2) + '%';
+            } else {
+              buyB += Number(statusitem.value); 
             }
-          },
-          axisLabel: {
-            fontSize: 24,
-            interval: 0,
-            rotate: 20
-          }
-        },
-        grid: {
-          x: '10%',
-          x2: '5%',
-          y: '10%',
-          y2: '1%',
-          height: 315
-        },
-        yAxis: {
-          show: true,
-          type: 'value',
-          axisLine: {
-            lineStyle: {
-              fontWeight: 400,
-              color: 'rgba(255,255,255,0.6)'
-            }
-          },
-          axisLabel: {
-            fontSize: 24,
-            formatter: '{value}万'
-          },
-          splitLine: {
-            show: false
-          }
-        },
-        series: [
-          {
-            data: res.clientseriesData,
-            type: 'bar',
-            barWidth: '42'
-          }
-        ]
-      };
-      sceneAlgorithmModelClientchart.clear();
-      sceneAlgorithmModelClientchart.setOption(options);
-      window.onresize = () => {
-        sceneAlgorithmModelClientchart.resize();
-      };
-    }, 100);
-  }
-  public sceneTabinit(res: any): void {
-    const sceneAlgorithmModelTab = document.getElementById(
-      'sceneAlgorithmModelTab'
-    );
-    const sceneAlgorithmModelTabchart: any = this.$echarts.init(
-      sceneAlgorithmModelTab
-    );
-    let options: any = {
-      color: ['rgba(137,227,136,1)'],
-      // top:20,
-      title: {
-        show: true,
-        text: '算法模型触发的标签更新数',
-        x: 'center',
-        textStyle: {
-          fontSize: 28,
-          color: '#ffffff'
-        }
-      },
-      xAxis: {
-        offset: 20,
-        show: true,
-        type: 'category',
-        data: res.xTabdata,
-        axisLine: {
-          lineStyle: {
-            fontWeight: 400,
-              color: 'rgba(255,255,255,0.6)'
-          }
-        },
-        axisLabel: {
-          fontSize: 24,
-          interval: 0,
-          rotate: 20,
-        }
-      },
-      grid: {
-        x: '10%',
-        x2: '5%',
-        y: '10%',
-        y2: '1%',
-        height: 315
-      },
-      yAxis: {
-        show: true,
-        type: 'value',
-        axisLine: {
-          lineStyle: {
-            fontWeight: 400,
-              color: 'rgba(255,255,255,0.6)'
-          }
-        },
-        // data: ['0', '500', '1000', '1500', '2000', '2500'],
-        axisLabel: {
-          fontSize: 24,
-          formatter: function(value: number) {
-            return value * 10;
-          }
-        },
-        splitLine: {
-          show: false
-        }
-      },
-      series: [
-        {
-          data: res.tabseriesData,
-          type: 'bar',
-          barWidth: '42'
-        }
-      ]
-    };
-    setTimeout(() => {
-      sceneAlgorithmModelTabchart.clear();
-      sceneAlgorithmModelTabchart.setOption(options);
-      window.onresize = () => {
-        sceneAlgorithmModelTabchart.resize();
-      };
-    }, 100);
+            });
+          this.statusData = [
+              {
+                text: '三个月以上购车',
+                value: buyA
+              },
+               {
+                text: '一至三个月内购车',
+                value: (buyB * 100).toFixed(2) + '%'
+              },
+               {
+                text: '一个月以内购车',
+                value: buyC
+              }
+            ];
+             Preference.sort(function(a: any, b: any) {
+            return Number(b.value.replace('%', '')) - Number(a.value.replace('%', ''));
+          });
+          this.prefers = Preference;
+          this.adviceData.carType = intentionTop.toString();
+           intentionBottom.forEach((item: any, index: any) => {
+             item.text === '高' ? this.adviceData.rank.top = item.value : item.text === '中' ? this.adviceData.rank.middle = item.value : item.text === '低' ? this.adviceData.rank.down = item.value : this.adviceData.rank.relDown = item.value;
+           });
+    });
   }
 }
 </script>
@@ -209,17 +133,87 @@ export default class SceneAlgorithmModel extends Vue {
 .sceneAlgorithmModel-wrap {
   width: 1048px;
   height: 100%;
-  border-right: 2px solid #024d61;
+  border-right: 2px solid rgba(58,66,99,1);
 
-  #sceneAlgorithmModelClient {
+  .sceneAlgorithmModelClient {
     width: 100%;
     height: 550px;
     padding: 20px 0;
+    background: url('../../assets/img/users@2x.png') no-repeat;
+    background-position: 55px 45px;
+    border-bottom: 2px solid rgba(58,66,99,1);
+    position: relative;
+    .sceneTextTitle{
+     color: white;
+    font-size: 28px;
+    margin-left: 46px;
+    margin-top: -20px;
+    display: inline-block;
+
+    }
+     .sceneTextTitlePrefers{
+        margin: 10px 0 0 55px;
+    }
+    .prefers{
+      position: absolute;
+      left:10px;
+      top:20px;
+    }
+    .advice{
+        position: absolute;
+        left:10px;
+        top:356px;
+    .adviceRand{
+          margin-left:130px;
+     }
+    }
+    .status{
+       position: absolute;
+       left: 640px;
+       top: 160px;
+    }
+    ul{
+      li::before{
+        content: '';
+        vertical-align: middle;
+        margin-top: -15px;
+        margin-right: 10px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.4);
+        display: inline-block;
+      }
+      li{
+        color: rgba(255,255,255,0.4);
+        font-size: 24px;
+        .sceneText{
+          margin-left: 5px;
+          // width:90px;
+          // display: inline-block;
+        }
+        .sceneTextCar{
+             margin-left: 5px;
+          // width:90px;
+          // display: inline-block;
+        }
+        .sceneStatus{
+           width:194px;
+          display: inline-block;
+        }
+         .sceneValue{
+           margin-left:5px;
+        }
+      }
+    }
   }
-  #sceneAlgorithmModelTab {
+  .sceneAlgorithmModelTab {
     width: 100%;
     height: 550px;
     padding: 40px 0;
+    background: url('../../assets/img/expect.png') no-repeat;
+    background-position: 55px 45px;
+    background-size: 85% 450px;
   }
 }
 </style>

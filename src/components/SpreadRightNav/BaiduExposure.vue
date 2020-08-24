@@ -11,62 +11,29 @@
           </p>
           <p class="tbys">
             同比
-            <span
-              :class="
-                this.tbzt > 0
-                  ? this.tbzt != 2
-                    ? 'iconfont iconxiajiang'
-                    : 'none'
-                  : 'iconfont iconshangsheng'
-              "
-            ></span>
-            <span
-              :class="
-                this.tbzt > 0 ? (this.tbzt != 2 ? 'huan' : 'whites') : 'tong'
-              "
-              >{{ baiduexposureData.tbData }}</span
+            <span class="iconfont iconxiajiang" v-if="this.tbzt===1" :class="tbcolor === 1 ? 'red' : tbcolor === 2 ? 'yellow' : tbcolor === 3 ? 'green' : 'white'"></span>
+            <span class="iconfont iconshangsheng" v-else-if="this.tbzt===0" :class="tbcolor === 1 ? 'red' : tbcolor === 2 ? 'yellow' : tbcolor === 3 ? 'green' : 'white'"></span>
+            <span class ="textsize" :class="tbcolor === 1 ? 'red' : tbcolor === 2 ? 'yellow' : tbcolor === 3 ? 'green' : 'white'">{{ baiduexposureData.tbData }}</span
             >
           </p>
           <p class="tbys">
             环比
-            <span
-              :class="
-                this.hbzt > 0
-                  ? this.hbzt != 2
-                    ? 'iconfont iconxiajiang'
-                    : 'none'
-                  : 'iconfont iconshangsheng'
-              "
-            ></span>
-            <span
-              :class="
-                this.hbzt > 0 ? (this.hbzt != 2 ? 'huan' : 'whites') : 'tong'
-              "
-              >{{ baiduexposureData.hbData }}</span
+            <span class="iconfont iconxiajiang" v-if="this.hbzt===1" :class="hbcolor === 1 ? 'red' : hbcolor === 2 ? 'yellow' : hbcolor === 3 ? 'green' : 'white'"></span>
+            <span class="iconfont iconshangsheng" v-else-if="this.hbzt===0" :class="hbcolor === 1 ? 'red' : hbcolor === 2 ? 'yellow' : hbcolor === 3 ? 'green' : 'white'"></span>
+            <span class ="textsize" :class="hbcolor === 1 ? 'red' : hbcolor === 2 ? 'yellow' : hbcolor === 3 ? 'green' : 'white'" >{{ baiduexposureData.hbData }}</span
             >
           </p>
         </div>
         <div class="goalNumber">
           <h6>目标曝光量</h6>
           <p>
-            <span>{{ baiduexposureData.goalExposeData }}</span>
+            <span>{{ baiduexposureData.goalExposeData }}</span>{{ baiduexposureData.goalExposeDataUnit }}
           </p>
           <p class="tbys">
             完成率
-            <span
-              :class="
-                this.fzt > 0
-                  ? this.fzt != 2
-                    ? 'iconfont iconxiajiang'
-                    : 'none'
-                  : 'iconfont iconshangsheng'
-              "
-            ></span>
-            <span
-              :class="
-                this.fzt > 0 ? (this.fzt != 2 ? 'huan' : 'whites') : 'tong'
-              "
-              >{{ baiduexposureData.finishData }}</span
+            <span class ="textsize whites" v-if="baiduexposureData.finishData==='—'" >{{ baiduexposureData.finishData }}</span
+            >
+             <span class ="textsize" v-else :class="fztcolor === 1 ? 'red' : fztcolor === 2 ? 'yellow' : fztcolor === 3 ? 'green' : 'white'" >{{ baiduexposureData.finishData }}</span
             >
           </p>
         </div>
@@ -74,7 +41,6 @@
       <div id="wordcloud"></div>
     </div>
 
-    <!-- <img src="../../assets/img/expect.png" alt=""> -->
   </div>
 </template>
 
@@ -82,7 +48,7 @@
 import 'echarts-wordcloud/dist/echarts-wordcloud';
 import 'echarts-wordcloud/dist/echarts-wordcloud.min';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import { calculation, numberFormat } from '@/utils/utils.ts';
+import { calculation, numberFormat, finishingRate, decideColor} from '@/utils/utils.ts';
 
 interface TIMERANGE {
   key: string;
@@ -132,11 +98,16 @@ export default class BaiduExposure extends Vue {
     this.getBaiduData();
   }
   public $echarts: any;
-  tbzt: any = 2;
-  hbzt: any = 2;
-  fzt: any = 2;
-  baiduexposureData: object = {};
+  actualData: any = {};
+  tbzt: any = 0;
+  tbcolor: any = 0;
+  hbzt: any = 0;
+  hbcolor: any = 0;
+  fzt: any = 0;
+  fztcolor: any = 0;
+  baiduexposureData: any = {};
   mounted() {
+    this.getKthData();
     this.getBaiduData();
   }
   initBaiduChart(data: any) {
@@ -177,47 +148,92 @@ export default class BaiduExposure extends Vue {
     };
     chart.setOption(option);
   }
+  
+  //获取目标，同比，环比阈值
+  getKthData() {
+    let params = {
+      module: '曝光'
+    };
+    $api.DashboardApi.configuration(params).then((res: any) => {
+      this.actualData = res.datas[0];
+    });
+  }
   //广告投放曝光量数据
   getBaiduData() {
     let params = {
       brandId: this.brandId,
       type: this.time.key,
+      groups: 'channel',
+      channel: '百度',
+    };
+    let cloundparams = {
+      brandId: this.brandId,
+      type: this.time.key,
+    };
+  
+     let paramsTarget: any = {
+      brandId: this.brandId,
+      type: this.time.key,
+      groups: 'channel',
+      channel: '百度',
     };
     if (Object.keys(this.currentArea)[0] !== 'all') {
       params = Object.assign(params, this.currentArea);
+      cloundparams = Object.assign(cloundparams, this.currentArea);
     }
-    $api.DashboardApi.spreadCloudData(params)
-    
+     if (Object.keys(this.currentArea)[0] === 'rfsCode') {
+        paramsTarget.rfsCodes = Object.values(this.currentArea)[0];
+    } else if (Object.keys(this.currentArea)[0] === 'macCode') {
+      paramsTarget.macCodes = Object.values(this.currentArea)[0];
+    }
+     let  goalImpData: any = 0,
+      finishData: any = '—';
+      //获取目标曝光量
+    $api.DashboardApi.spreadKpi(paramsTarget).then((res: any) => {
+      if (res.now.length !== 0 && res.now[0] !== null) {
+        res.now.forEach((item: any, index: any) => {
+          goalImpData = goalImpData + item.imp;
+        });
+      } else {
+        goalImpData = 0;
+      }
+    });
+   //获取曝光量
+    $api.DashboardApi.spreadData3(params)
       .then((res: any) => {
-        let exposeData: Number = 0,
-          clicklastData: Number = 0,
-          clickNum: Number = 0,
-          clicklastYearData: Number = 0,
+        //初始化色值
+       this.tbcolor = 0;
+       this.hbcolor = 0;
+       this.fztcolor = 0;
+       let implastData: Number = 0,
+          impData: any = 0,
+          implastYearData: Number = 0,
           tbrate: any = '',
-          hbrate: any = '',
-          baiduseries: Array<any> = [];
-        if (res.now.length !== 0) {
+          hbrate: any = '';
+        if (res.now[0] !== null && res.now.length !== 0) {
           res.now.forEach((item: any, index: any) => {
-            baiduseries[index] = {
-              value: item.click,
-              name: item.adslot,
-            };
-            clickNum = clickNum + item.click;
+            impData = impData + item.imp;
           });
         } else {
-          clickNum = 0;
+          impData = 0;
         }
         //同比
-        if (res.lastYear.length !== 0) {
-          res.lastYear.forEach((item: any, index: any) => {
-            clicklastYearData = clicklastYearData + res.lastYear[index].click;
+        if (res.lsatYear[0] !== null && res.lsatYear.length !== 0) {
+          res.lsatYear.forEach((item: any, index: any) => {
+            implastYearData = implastYearData + res.lsatYear[index].imp;
           });
-          let tb = calculation(clickNum, clicklastYearData);
-          if (tb.startsWith('-')) {
+          let tb = calculation(impData, implastYearData);
+             if (this.actualData) {
+                 this.tbcolor = decideColor(tb, this.actualData.lastAlarmCycle, this.actualData.lastEarlyWarCycle, this.actualData.lastAlarmCycleSymbol);
+                } else {
+                this.tbcolor = 0;
+                }
+          if (tb === '') {
+            this.tbzt = 2;
+            tbrate = '—';
+          } else if (tb.startsWith('-')) {
             this.tbzt = 1; //0正1负
             tbrate = this.negative(tb);
-          } else if (tb === '') {
-            tbrate = '——';
           } else {
             this.tbzt = 0;
             tbrate = this.negative(tb);
@@ -227,16 +243,23 @@ export default class BaiduExposure extends Vue {
           this.tbzt = 2;
         }
         //环比
-        if (res.last.length !== 0) {
+        if (res.last[0] !== null && res.last.length !== 0) {
           res.last.forEach((item: any, index: any) => {
-            clicklastData = clicklastData + res.last[index].click;
+            implastData = implastData + res.last[index].imp;
           });
-          let hb = calculation(clickNum, clicklastData);
-          if (hb.startsWith('-')) {
+          let hb = calculation(impData, implastData);
+             if (this.actualData) {
+                this.hbcolor = decideColor(hb, this.actualData.ringAlarmCycle, this.actualData.ringEarlyWarCycle, this.actualData.ringAlarmCycleSymbol);
+                } else {
+                this.hbcolor = 0; 
+                }
+         
+          if (hb === '') {
+            this.hbzt = 2;
+            hbrate = '—';
+          } else if (hb.startsWith('-')) {
             this.hbzt = 1; //0正1负
             hbrate = this.negative(hb);
-          } else if (hb === '') {
-            hbrate = '——';
           } else {
             this.hbzt = 0;
             hbrate = this.negative(hb);
@@ -245,14 +268,41 @@ export default class BaiduExposure extends Vue {
           hbrate = '—';
           this.hbzt = 2;
         }
+         if (this.actualData) {
+                this.fztcolor = decideColor(finishingRate(impData, goalImpData), this.actualData.kpiAlarmCycle, this.actualData.kpiEarlyWarCycle, this.actualData.kpiAlarmCycleSymbol);
+                } else {
+                this.fztcolor = 0; 
+                }
         this.baiduexposureData = {
-          exposeData: numberFormat(clickNum).value,
-          exposeDataUnit: numberFormat(clickNum).unit,
-          goalExposeData: '—',
+          exposeData: numberFormat(impData).value,
+          exposeDataUnit: numberFormat(impData).unit,
+          goalExposeData: numberFormat(goalImpData).value,
+          goalExposeDataUnit: numberFormat(goalImpData).unit,
           tbData: tbrate,
           hbData: hbrate,
-          finishData: '—',
+         finishData: goalImpData ? finishingRate(impData, goalImpData) : '—',
+
         };
+        if (res.now[0] === null) {
+          this.baiduexposureData.exposeData = '—';
+        }
+      })
+      .catch((e) => {
+        // console.log(e);
+      });
+    //获取词云数据
+    $api.DashboardApi.spreadCloudData(cloundparams)
+      .then((res: any) => {
+        let baiduseries: Array<any> = [];
+        if (res.now.length !== 0) {
+          res.now.forEach((item: any, index: any) => {
+            baiduseries[index] = {
+              value: item.click,
+              name: item.adslot,
+            };
+          });
+        }
+
         this.initBaiduChart(baiduseries);
       })
       .catch((e) => {
@@ -296,17 +346,34 @@ export default class BaiduExposure extends Vue {
     .iconshangsheng {
       font-family: PingFangSC-Regular, PingFang SC;
       font-weight: 400;
-      color: rgba(86, 216, 132, 1);
+     
       font-size: 24px /* 24/100 */;
       margin-left: 5px;
     }
     .iconxiajiang {
       font-family: PingFangSC-Regular, PingFang SC;
       font-weight: 400;
-      color: rgba(255, 113, 118, 1);
       font-size: 24px;
       margin-left: 5px;
     }
+    .textsize{
+      font-size: 24px;
+      margin-left: 5px;
+    }
+    .red{
+      color: rgba(255, 113, 118, 1);
+      
+    }
+    .green{
+      color: rgba(86, 216, 132, 1);
+    }
+    .yellow {
+             color: #FFC72F  ;
+           }
+
+    .white {
+             color: #ffffff;
+           }
     .goalNumber {
       padding: 100px 0 20px 0;
       .tbys {
@@ -329,7 +396,8 @@ export default class BaiduExposure extends Vue {
     .whites {
       font-weight: 10;
       color: rgba(255, 255, 255, 1);
-      font-size: 16px;
+      font-size: 24px;
+      margin-left: 10px;
     }
     .none {
       display: none;

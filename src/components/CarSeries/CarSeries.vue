@@ -1,36 +1,40 @@
 <template>
   <div class="carSeries-wrap">
-    <div class="radio-group"
-      v-for="car in carType" 
-      :key="car.brandId"
+    <template
+      v-for="car in carType"     
     >
-      <i 
-        class="drop-btn"
-        :class="currentCarSeries === car.brandName ? 'el-icon-caret-bottom': 'el-icon-caret-right'"
-        v-if="car.children.length > 0"
-        @click="onDropBtnclick(car.brandName)"
-      ></i>
-      <el-radio 
-        v-model="currentBrandId" 
-        :label="car.brandId"
-        @change="onRadioChange(car)"
-        :disabled="car.brandName === 'R标'"
+      <div class="radio-group"
+        :key="car.brandId"
+        v-if="car.admission"
       >
-        <span class="iconfont iconche"></span>
-        <span class="label">{{car.brandName}}</span>
-      </el-radio>
-      <div 
-        class="car-line-list"
-        :class="currentCarSeries === car.brandName ? 'show' : ''"
-      >
-        <el-checkbox-group v-model="checkedCarSeries" class="checkbox-group" @change="checked=>onCheckboxChange(checked, car)">
-          <el-checkbox v-for="item in car.children" :label="item.seriesId" :key="item.seriesId">
-            <span class="iconfont iconche"></span>
-            <span class="label">{{item.seriesChineseName}}</span>
-          </el-checkbox>
-        </el-checkbox-group>
+        <i 
+          class="drop-btn"
+          :class="currentCarSeries === car.brandName ? 'el-icon-caret-bottom': 'el-icon-caret-right'"
+          v-if="car.children.length > 0"
+          @click="onDropBtnclick(car.brandName)"
+        ></i>
+        <el-radio 
+          v-model="currentBrandId" 
+          :label="car.brandId"
+          @change="onRadioChange(car)"
+          :disabled="car.brandName === 'R标'"
+        >
+          <span class="iconfont iconche"></span>
+          <span class="label">{{car.brandName}}</span>
+        </el-radio>
+        <div 
+          class="car-line-list"
+          :class="currentCarSeries === car.brandName ? 'show' : ''"
+        >
+          <el-checkbox-group v-model="checkedCarSeries" class="checkbox-group" @change="checked=>onCheckboxChange(checked, car)">
+            <el-checkbox v-for="item in car.children" :label="item.seriesId" :key="item.seriesId">
+              <span class="iconfont iconche"></span>
+              <span class="label">{{item.seriesChineseName}}</span>
+            </el-checkbox>
+          </el-checkbox-group>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -49,31 +53,36 @@ export default class CarSeries extends Vue {
     {
       brandId: '100',
       brandName: 'R标',
-      children: []
+      children: [],
+      admission: false
     },
     {
       brandId: '101',
       brandName: '荣威',
-      children: []
+      children: [],
+      admission: false
     },
     {
       brandId: '121',
       brandName: '名爵',
-      children: []
+      children: [],
+      admission: false
     }
   ];
   seriesData = $commonData.seriesData.getSeriesMap();
   checkedCarSeries: string[] = [];
   // 单选data
-  currentBrandId: string = '121';
+  currentBrandId: string = $permission.getDefaultBrandId();
   currentCarSeries: string = '';
 
   @Watch('brandName')
   onBranchNameChange() {
     if ( this.brandName === '名爵' ) {
       this.currentBrandId = '121';
-    } else {
+    } else if ( this.brandName === '荣威' ) {
       this.currentBrandId = '101';
+    } else {
+      this.currentBrandId = '100';
     }
   }
 
@@ -98,6 +107,16 @@ export default class CarSeries extends Vue {
   }
 
   created() {
+    let roles = $permission.getRoles();
+    if ( roles.isAdministrator ) {
+      this.carType.forEach((v) => {
+        v['admission'] = true;
+      });
+    } else {
+      this.carType[0]['admission'] = roles.isRAdmin ? true : false;
+      this.carType[1]['admission'] = roles.isRWAdmin ? true : false;
+      this.carType[2]['admission'] = roles.isMGAdmin ? true : false;
+    }
     this.seriesData.forEach((car: any) => {
       if (car.brandId === 101) {
         this.carType[1].children = car.children;
@@ -106,10 +125,11 @@ export default class CarSeries extends Vue {
         this.carType[2].children = car.children;
       }
     });
+    this.currentCarSeries = '';
   }
 
   mounted() {
-    //
+    
   }
 
 }

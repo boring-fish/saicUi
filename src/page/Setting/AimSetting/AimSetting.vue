@@ -1,7 +1,7 @@
 <template>
   <div class="aimsetting-wrap">
     <div class="simulate-button-wrap">
-      <a  class="simulate-button" :href="href" download="Excel模板.zip">下载Excel模板</a>
+      <a  class="simulate-button"  download="Excel模板.zip" @click="download">下载Excel模板</a>
       <input class="upload-input" @change="handleUploadFile"  
       type="file" 
       accept=".xls,.xlsx" 
@@ -88,11 +88,21 @@ column = [{
 tableData = [];
 uploadTime = '';
 
-
-    get href () {
-      return $api.AimSettingApi.getExcelTemplate();
-    }
-
+  download() {
+    $api.AimSettingApi.getExcelTemplate1().then((res) => {
+      const blob = new Blob([res], {type: 'application/zip'});
+      console.log(blob);
+      let url = window.URL.createObjectURL(blob);
+      let link = document.createElement('a');
+      link.href = url;
+      link.style.display = 'none';
+      //取出下载文件名
+      link.setAttribute('download', 'Excel模板.zip');
+      link.click();
+      window.URL.revokeObjectURL(url);
+      link.remove();
+    });
+  }
 
     handleUploadFile( e: any ) {
        const file = e.target.files && e.target.files[0];
@@ -195,6 +205,7 @@ uploadTime = '';
       height: 80px;
       line-height: 80px;
       margin-right: 40px;
+      cursor: pointer;
       color: #fff;
       background: rgba(20,32,56,1);
       text-align: center;

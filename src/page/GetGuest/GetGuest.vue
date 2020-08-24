@@ -1,8 +1,39 @@
 <template>
   <div class="getguest-wrap">
     <div class="loopContent">
-      <!-- 地图和趋势 -->
+      <!-- 跟进情况和渠道获客量 -->
       <div class="contentAbove contentAll">
+
+        <div class="channel box-bg-border">
+          <span class="border border-top-left"></span>
+          <span class="border border-top-right"></span>
+          <span class="border border-bottom-left"></span>
+          <span class="border border-bottom-right"></span>
+          <GetChannel
+          :brandId="brandId"
+          :brandName="brandName"
+          :time="time"
+          :currentArea="currentArea"
+          />
+        </div>
+        
+        <div class="followUp box-bg-border">
+          <span class="border border-top-left"></span>
+          <span class="border border-top-right"></span>
+          <span class="border border-bottom-left"></span>
+          <span class="border border-bottom-right"></span>
+          <GetFollow
+          :brandId="brandId"
+          :brandName="brandName"
+          :time="time"
+          :currentArea="currentArea"
+          />
+        </div>
+
+
+      </div>
+      <!-- 地图和趋势 -->
+      <div class="contentBottom contentAll">
 
         <div class="location box-bg-border">
           <span class="border border-top-left"></span>
@@ -31,36 +62,7 @@
         </div>
 
       </div>
-      <!-- 跟进情况和渠道获客量 -->
-      <div class="contentBottom contentAll">
-
-        <div class="followUp box-bg-border">
-          <span class="border border-top-left"></span>
-          <span class="border border-top-right"></span>
-          <span class="border border-bottom-left"></span>
-          <span class="border border-bottom-right"></span>
-          <GetFollow
-          :brandId="brandId"
-          :brandName="brandName"
-          :time="time"
-          :currentArea="currentArea"
-          />
-        </div>
-
-        <div class="channel box-bg-border">
-          <span class="border border-top-left"></span>
-          <span class="border border-top-right"></span>
-          <span class="border border-bottom-left"></span>
-          <span class="border border-bottom-right"></span>
-          <GetChannel
-          :brandId="brandId"
-          :brandName="brandName"
-          :time="time"
-          :currentArea="currentArea"
-          />
-        </div>
-
-      </div>
+      
     </div>
   </div>
 </template>
@@ -145,10 +147,11 @@ export default class GetGuest extends Vue {
       background: $box-bg-primary;
       height: 100%;
     }
-    .contentAbove {
+    .contentBottom {
       width: 100%;
       height: 820px;
       display: flex;
+      margin-top: 20px;
       .location {
         width: 1320px;
       }
@@ -157,17 +160,17 @@ export default class GetGuest extends Vue {
         margin-left: 20px;
       }
     }
-    .contentBottom {
+    .contentAbove {
       width: 100%;
       height: 832px;
       display: flex;
-      margin-top: 20px;
+      justify-content: space-between;
       .followUp {
         width: 1738px;
       }
       .channel {
         width: 1738px;
-        margin-left: 20px;
+        // margin-left: 20px;
       }
     }
   }

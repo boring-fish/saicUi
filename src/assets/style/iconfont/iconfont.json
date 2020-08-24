@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "16560505",
+      "name": "意向明细",
+      "font_class": "yixiangmingxi",
+      "unicode": "e6d9",
+      "unicode_decimal": 59097
+    },
+    {
+      "icon_id": "16560506",
+      "name": "占比",
+      "font_class": "zhanbi",
+      "unicode": "e6da",
+      "unicode_decimal": 59098
+    },
+    {
       "icon_id": "5809239",
       "name": "左箭头",
       "font_class": "zuojiantou",

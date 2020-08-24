@@ -32,7 +32,7 @@ export class HttpRequest {
       {
         method: 'GET',
         url: url,
-        params: params,
+        params: params
       },
       {
         noLoading: noLoading
@@ -40,6 +40,40 @@ export class HttpRequest {
     );
   }
 
+  protected DownLoad(
+    url: string,
+    params: Object,
+    noLoading: boolean = false,
+  ): Promise<any> {
+    return this.request(
+      {
+        method: 'GET',
+        url: url,
+        params: params,
+        responseType: 'blob'
+      },
+      {
+        noLoading: noLoading
+      }
+    );
+  }
+  protected DownLoadPost(
+    url: string,
+    params: Object,
+    noLoading: boolean = false,
+  ): Promise<any> {
+    return this.request(
+      {
+        method: 'POST',
+        url: url,
+        params: params,
+        responseType: 'blob'
+      },
+      {
+        noLoading: noLoading
+      }
+    );
+  }
   protected Put(
     url: string,
     body: Object,

@@ -18,35 +18,53 @@
               v-for="(item,index) in warnbutton1"
               :key="index"
               :class="index === warnClassIndex ? 'warnbutton2' : ''"
-              @click="warnTab($event,index)"
+              @click="warnTab(item,index)"
             >{{item}}</div>
           </div>
           <div class="warnr warnrt">
-            <div
+            <!-- <div
               class="warnbutton"
               v-for="(item,index) in warnbutton2"
-              :key="index"
+              :key="item"
+             
               :class="index === warnClassIndex2 ? 'warnbutton2' : ''"
-              @click="warnTabBrand($event,index)"
-            >{{item}}</div>
+              @click="warnTabBrand(item, index)"
+            >{{item}}</div> -->
+              <div
+              class="warnbutton"
+              :class="!isRAdmin?'warnbutton3':warnClassIndex2 === 0 ? 'warnbutton2' : ''"
+              @click="warnTabBrand(0)"
+            >R标</div>
+              <div
+              class="warnbutton"
+              :class="!isRWAdmin?'warnbutton3':warnClassIndex2 === 1  ? 'warnbutton2' : ''"
+              @click="warnTabBrand(1)"
+            >荣威</div>
+              <div
+              class="warnbutton"
+              :class="!isMGAdmin?'warnbutton3':warnClassIndex2 === 2 ? 'warnbutton2' : ''"
+              @click="warnTabBrand(2)"
+            >名爵</div>
           </div>
           <div class="block">
             <el-date-picker
-              v-model="value2"
+              v-model="time"
               ref="datePickers"
-              type="datetimerange"
+              type="daterange"
               :appendToBody="false"
               @focus="handleShowDatePanel"
               @blur="handleCloseDatePanel"
+              @change="getchangeData"
               range-separator="—"
               prefix-icon="sd"
-              format="yyyy年MM月dd日 hh:mm:ss"
-              :default-time="['12:00:00', '08:00:00']"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
+              format="yyyy年MM月dd日"
+              value-format="yyyy-MM-dd"
+              :default-time="['00:00:00', '23:59:59']"
             ></el-date-picker>
             <span v-if="datePanel" class="iconfont iconsanjiaojiantou-shang"></span>
-            <span v-else class="iconfont iconsanjiaojiantou-xia" @click="handleClickDatePicker"></span>
+            <span v-else class="iconfont iconsanjiaojiantou-xia"></span>
           </div>
           <div class="selectdiv">
             <el-select
@@ -54,6 +72,7 @@
               placeholder="请选择"
               @focus="handleShowDatePanel"
               @blur="handleCloseDatePanel"
+              @change="getchangeData"
               :popper-append-to-body="false"
             >
               <el-option
@@ -64,18 +83,18 @@
               ></el-option>
             </el-select>
             <span v-if="selectPanel" class="iconfont iconsanjiaojiantou-shang"></span>
-            <span v-else class="iconfont iconsanjiaojiantou-xia" @click="handleClickDatePicker"></span>
+            <span v-else class="iconfont iconsanjiaojiantou-xia"></span>
           </div>
 
-          <span class="iconfont iconxiazai"></span>
+          <span class="iconfont iconxiazai" @click="getExcelData()"></span>
         </div>
 
         <div class="warnSelectContent">
-          <div class="warnSelectContentOption" v-for="(item,index) in warnOption" :key="index">
-            <span class="iconfont iconyujing" :class="item.zt>0?'right':'error'"></span>
+          <div class="warnSelectContentOption" v-for="(item,index) in warnData" :key="index">
+            <span class="iconfont iconyujing" :class="item.warningType==='0'?'right':'error'"></span>
             <div class="warnSelectwz">
-              <p>{{item.time}}</p>
-              <p>{{item.total}}</p>
+              <p>{{item.createTime}}</p>
+              <p>{{item.emailDesc}}</p>
             </div>
           </div>
         </div>
@@ -91,63 +110,32 @@ import moment from 'moment';
 @Component({})
 export default class EarlyWarn extends Vue {
   public warnbutton1: any = ['全部', '预警', '报警'];
-  public warnbutton2: any = ['R标', '荣威', '名爵'];
-  public warnOption: any = [
-    {
-      zt: 1, //1表示正常，0表示异常
-      time: '2020/03/01 08:00:00',
-      total: '西北地区上月建卡目标完成率为68%'
-    },
-    {
-      zt: 0,
-      time: '2020/03/01 08:00:00',
-      total: '西北地区上月建卡目标完成率为68%'
-    }
-  ];
-
+  public warningType: any = '';
+  // public warnbutton2: any = ['R标', '荣威', '名爵'];
+  brandid: any = '101';
+  public warnData: Array<any> = [];
   dialogVisible: boolean = false;
-  begaintime: any = new Date();
-  endtime: any = new Date(this.begaintime).setDate(
-    
-
-    this.begaintime.getDate() + 30
-  );
-  
-  value2: any = [this.begaintime, this.endtime];
-  public areaoptions: any = [
+  time: any = '';
+  public areaoptions: Array<any> = [
     {
-      value: '1',
-      label: '上海'
-    },
-    {
-      value: '2',
-      label: '北京'
-    },
-    {
-      value: '3',
-      label: '南京'
-    },
-    {
-      value: '4',
-      label: '苏州'
-    },
-    {
-      value: '5',
-      label: '兰州'
-    },
-    {
-      value: '6',
+      value: '',
       label: '全国'
     }
   ];
-  public areacheck: any = '全国';
+  public areacheck: any = '';
   warnClassIndex: number = 0;
   warnClassIndex2: number = 0;
+  isMGAdmin: any = '';
+  isRWAdmin: any = '';
+  isRAdmin: any = '';
   datePanel: boolean = false;
   selectPanel: boolean = false;
   @Prop({ default: true }) private changeDefeatedModal!: boolean;
   mounted() {
-    this.openClose();
+    //  this.getRoles();
+    //  this.openClose(); 
+    //  this.getWarnData();
+     this.getAreaData();
   }
 
   public openClose() {
@@ -156,49 +144,142 @@ export default class EarlyWarn extends Vue {
   public handleClose(done: any) {
     this.$emit('closeyj', false);
   }
-  public warnTab($event: any, index: number) {
+  public warnTab(item: any, index: number) {
     this.warnClassIndex = index;
+    this.warningType = item === '预警' ? '0' : item === '报警' ? '1' : '';
+    this.getWarnData();
+    
   }
-  public warnTabBrand($event: any, index: number) {
+getRoles() {
+let roles: any = $permission.getRoles();
+Object.keys(roles).forEach((item: any) => {
+  if (item === 'isMGAdmin') {
+    this.isMGAdmin = roles[item];
+    if (this.isMGAdmin) {
+     this.warnClassIndex2 = 2;
+    }
+  }
+  if (item === 'isRWAdmin') {
+    this.isRWAdmin = roles[item];
+     if (this.isRWAdmin) {
+     this.warnClassIndex2 = 1;
+    }
+  }
+  if (item === 'isRAdmin') {
+    this.isRAdmin = roles[item];
+ if (this.isRAdmin) {
+     this.warnClassIndex2 = 0;
+    }
+  }
+   if (item === 'isAdministrator') {
+    if (roles[item]) {
+      this.isRAdmin = true;
+     this.isRWAdmin = true;
+     this.isMGAdmin = true;
+     this.warnClassIndex2 = 0;
+    }
+  }
+});
+}
+   public warnTabBrand(index: number) {
     this.warnClassIndex2 = index;
+    this.brandid = index === 1 ? '101' : index === 2 ? '121' : '100';
+   this.getWarnData();
   }
   handleShowDatePanel(param: any): void {
-    if (param.type === 'datetimerange') {
+    if (param.type === 'daterange') {
       this.datePanel = true;
     } else {
       this.selectPanel = true;
     }
-
   }
   handleCloseDatePanel(param: any): void {
-    if (param.type === 'datetimerange') {
+     this.getWarnData();
+    if (param.type === 'daterange') {
       this.datePanel = false;
     } else {
       this.selectPanel = false;
     }
   }
-  handleClickDatePicker(): void {
-    (this as any).$refs.datePickers.$refs.reference.focus();
+  getchangeData() {
+    this.getWarnData();
   }
   @Watch('changeDefeatedModal')
   getchangeDefeatedModal(newval: any, oldval: any) {
-    this.openClose();
     this.warnClassIndex = 0;
-    this.warnClassIndex2 = 0;
+    this.getRoles();
+    this.warningType = '';
+    this.brandid =  this.warnClassIndex2 === 0 ? '100' : this.warnClassIndex2 === 1 ? 101 : 121;
+    this.openClose();
+    this. getWarnData();
+  }
+  getWarnData() {
+    let params = {
+      brandId: this.brandid,
+      logTimeE: this.time[1],
+      logTimeS: this.time[0],
+      pageNo: '1',
+      pageSize: '50',
+      rfsCode: this.areacheck,
+      warningType: this.warningType
+    };
+    $api.WarnSettingApi.getWarnList(params).then((res: any) => {
+      if (res.datas) {
+        this.warnData = [];
+         res.datas.forEach((item: any) => {
+          this.warnData.push({
+            createTime: item.createTime.replace(/-/g, '/'),
+            emailDesc: item.emailDesc,
+            warningType: item.warningType
+          });
+        });
+      } else {
+         this.warnData = [];
+      }
+      });
+  }
+  getExcelData() {
+    let params = {
+        brandId: this.brandid,
+        logTimeE: this.time[1],
+        logTimeS: this.time[0],
+        rfsCode: this.areacheck,
+        warningType: this.warningType
+    };
+     $api.WarnSettingApi.getWarnExcel(params).then((res: any) => {
+          const blob = new Blob([res], { type: 'application/xlsx' });
+          let url = window.URL.createObjectURL(blob);
+          let link = document.createElement('a');
+          link.href = url;
+          link.style.display = 'none';
+          link.setAttribute('download', '预警报警详情.xlsx');
+          link.click();
+          window.URL.revokeObjectURL(url);
+          link.remove();
+          });
+  }
+  getAreaData() {
+     $api.DashboardApi.getrfsBaseData({}).then((res: any) => {
+        res.forEach((item: any) => {
+          this.areaoptions.push({
+            value: item.rfsCode,
+            label: item.rfsName
+          });
+        });
+      });
   }
 }
 </script>
 
 <style lang="scss">
-.earlywarn-wrap {
   .el-dialog {
-    background-color: #0a263c;
+    background-color:rgba(18,22,38,1);
     color: #ffffff;
     font-size: 36px;
     .el-dialog__header {
       padding: 32px 0px 22px 44px;
       color: #ffffff;
-      border-bottom: 2px solid #0b4d5e;
+       border-bottom: 1px solid rgba(58,66,99,1);;
 
       .el-dialog__title {
         font-size: 36px;
@@ -213,10 +294,8 @@ export default class EarlyWarn extends Vue {
     }
 
     .el-dialog__body {
-      padding: 0 60px;
       color: #ffffff;
     }
-
     .warning {
       width: 100%;
       height: 100%;
@@ -225,19 +304,41 @@ export default class EarlyWarn extends Vue {
         width: 100%;
         height: 100%;
         display: flex;
-        .warnr {
+        padding: 0 60px;
+        .warnrt {
+          margin-left: 40px;
+        }
+         .warnr {
           display: flex;
           align-items: center;
+          background: rgba(9, 12, 21, 1);
+          border-radius: 30px;
+          border: 1px solid rgba(58, 66, 99, 1);
+          color: rgba(255, 255, 255, 0.4);
           .warnbutton {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 176px;
             height: 60px;
-            background: #021722;
-            color: #ffffff;
-            font-size: 28px;
-            margin-left: 5px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 28px /* 28/100 */;
+            cursor: pointer;
+            background:rgba(9,12,21,1);
+          }
+          .warnbutton:nth-child(1) {
+            border-top-left-radius: 40px;
+            border-bottom-left-radius: 40px;
+            
+          }
+          .warnbutton:nth-child(2) {
+            border-left: 2px solid rgba(58, 66, 99, 1);
+            border-right: 2px solid rgba(58, 66, 99, 1);
+          }
+          .warnbutton:nth-child(3) {
+            border-top-right-radius: 40px;
+            border-bottom-right-radius: 40px;
+
           }
           .warnbutton2 {
             display: flex;
@@ -245,15 +346,25 @@ export default class EarlyWarn extends Vue {
             justify-content: center;
             width: 176px;
             height: 60px;
-            background: #002f3b;
-            border: 1px solid #0ac9cd;
+            background: #236bb4;
+            border: 2px solid #3a4263;
             color: #ffffff;
             font-size: 28px;
-            margin-left: 5px;
           }
-        }
-        .warnrt {
-          margin-left: 40px;
+          .warnbutton3 {
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.1;
+            justify-content: center;
+            width: 176px;
+            height: 60px;
+            // background: #236bb4;
+            // border: 1px solid #3a4263;
+            color: #ffffff;
+            font-size: 28px /* 28/100 */;
+          }
         }
         .block {
           width: 780px;
@@ -261,18 +372,21 @@ export default class EarlyWarn extends Vue {
           margin-left: 40px;
           display: flex;
           position: relative;
+          background: rgba(9,12,21,1);
+          border-radius: 30px;
+          border: 1px solid rgba(58,66,99,1);
           .iconsanjiaojiantou-xia,
           .iconsanjiaojiantou-shang {
             position: absolute;
             top: 0;
-            right: 15px;
+            right: 10px;
             color: #ffffff;
             line-height: 60px;
             font-size: 32px;
             cursor: pointer;
           }
           .iconsanjiaojiantou-shang {
-            color: #0ac9cd;
+            color:rgba(35,107,180,1);
           }
           .el-popper[x-placement^="bottom"] {
             position: absolute !important;
@@ -280,15 +394,15 @@ export default class EarlyWarn extends Vue {
             left: 0 !important;
             width: 1000px;
             border: none;
-            background: #021722;
+            background: rgba(30,36,65,1);
           }
           .el-input__inner {
             -webkit-appearance: none;
-            background: rgba(2, 23, 34, 1);
-            border-radius: 4px;
-            border: 2px solid rgba(0, 47, 59, 1);
             box-sizing: border-box;
             color: #ffffff;
+            background:rgba(9,12,21,1);
+            border-radius:15px;
+            border:1px solid rgba(58,66,99,1);
           }
           .el-icon-arrow-right:before {
             color: #ffffff;
@@ -297,7 +411,7 @@ export default class EarlyWarn extends Vue {
             width: 45px;
             height: 24px;
             border-radius: 100%;
-            background-color: #0ac9cd;
+            background-color: rgba(35,107,180,1);
             color: #ffffff;
             z-index: 100;
           }
@@ -305,7 +419,7 @@ export default class EarlyWarn extends Vue {
             width: 45px;
             height: 24px;
             border-radius: 100%;
-            background-color: #0ac9cd;
+            background-color: rgba(35,107,180,1);
             color: #ffffff;
             z-index: 100;
           }
@@ -317,26 +431,30 @@ export default class EarlyWarn extends Vue {
           .el-date-table td.in-range div:hover,
           .el-date-table.is-week-mode .el-date-table__row.current div,
           .el-date-table.is-week-mode .el-date-table__row:hover div {
-            background: rgba(10, 174, 179, 0.3);
+            background:rgba(35,107,180,0.2);
+
             color: #ffffff;
           }
 
           .el-date-range-picker__time-header {
-            border: 2px solid #002f3b;
+            border:1px solid rgba(58,66,99,1);
+           
           }
+           .el-picker-panel__icon-btn {
+             color: white;
+            }
           .el-date-range-picker__header div {
             color: #ffffff;
           }
           .el-date-table th {
             color: #ffffff;
-            border: 2px solid #002f3b;
+            border:1px solid rgba(58,66,99,1);
           }
           .el-date-range-picker__content.is-left {
-            border-right: 2px solid #002f3b;
+            border-right:1px solid rgba(58,66,99,1);
           }
           .el-picker-panel__footer {
-            border-top: 2px solid #01475a;
-
+            border-top:1px solid rgba(58,66,99,1);
             background-color: #021722;
           }
           .el-button--text {
@@ -354,11 +472,13 @@ export default class EarlyWarn extends Vue {
             color: #ffffff;
           }
           .el-time-panel {
-            background-color: #021722;
+            background:rgba(30,36,65,1);
+            box-shadow:0px 4px 12px 0px rgba(0,0,0,0.5);
+            border-radius:8px;
             border: none;
           }
           .el-time-spinner {
-            background: rgba(10, 174, 179, 0.3);
+            background:rgba(30,36,65,0.3);
           }
 
           .el-time-panel__btn {
@@ -375,14 +495,21 @@ export default class EarlyWarn extends Vue {
           .el-range-editor.el-input__inner {
             width: 95%;
             height: 60px;
-            background: #021722;
+            background:rgba(9,12,21,1);
             border: none;
+          }
+          .el-range-editor.el-input__inner:nth-child(1) {
+            width: 95%;
+            height: 60px;
+            background:rgba(9,12,21,1);
+            border-radius: 30px;
+            border-left: 1px solid #3a4263
           }
           .el-date-editor .el-range-input {
             width: 100%;
             color: #ffffff;
             font-size: 28px;
-            background: #021722;
+            background:rgba(9,12,21,1);
           }
           .el-date-editor .el-range__close-icon {
             font-size: 32px;
@@ -412,7 +539,7 @@ export default class EarlyWarn extends Vue {
             cursor: pointer;
           }
           .iconsanjiaojiantou-shang {
-            color: #0ac9cd;
+            color: rgba(35,107,180,1);
           }
           .el-select {
             display: block;
@@ -422,29 +549,32 @@ export default class EarlyWarn extends Vue {
             margin-left: 40px;
             .el-input--suffix .el-input__inner {
               color: #fff;
-              background: #021722;
               width: 218px;
               height: 60px;
               font-size: 28px;
-              border: none;
+              background:rgba(9,12,21,1);
+              border-radius:15px;
+              border:1px solid rgba(58,66,99,1);
               .el-input__icon {
                 margin-left: 40px;
               }
             }
             .el-scrollbar__wrap {
               width: 250px;
-              background: #021722;
               color: #ffffff;
               padding: 20px 20px 20px 10px;
               font-size: 28px;
+              background:rgba(30,36,65,1);
+              box-shadow:0px 4px 12px 0px rgba(0,0,0,0.5);
+              border-radius:8px;
             }
             .el-select-dropdown__item.hover,
             .el-select-dropdown__item:hover {
-              background: rgba(0, 47, 59, 1);
+              background:rgba(35,107,180,0.2);
             }
             .el-select-dropdown__item.hover,
             .el-select-dropdown__item.selected {
-              color: #0ac9cd;
+              color: rgba(35,107,180,1);
             }
             .el-select-dropdown__item {
               font-size: 28px;
@@ -470,16 +600,18 @@ export default class EarlyWarn extends Vue {
         }
       }
       .warnSelectContent {
-        width: 100%;
+        width: 101%;
         height: 1200px;
-        background: #0a263c;
+        background: rgba(18,22,38,1);
         margin-top: 10px;
         font-size: 32px;
         color: #ffffff;
+        padding: 0 0 0 60px;
+         overflow-y: scroll;
         .warnSelectContentOption {
           width: 100%;
           height: 150px;
-          border-bottom: 2px solid #0b4d5e;
+          border-bottom:1px solid rgba(58,66,99,1);;
           display: flex;
           .iconyujing {
             color: #e83604;
@@ -487,135 +619,21 @@ export default class EarlyWarn extends Vue {
             padding: 50px 0px 0 15px;
           }
           .right {
-            color: #e83604;
-          }
-          .error {
             color: #fcce00;
           }
+          .error {
+            color: #e83604;
+          }
           .warnSelectwz {
-            padding: 30px 50px;
+            padding: 38px 50px;
+          }
+           .warnSelectwz p:nth-child(1){
+            color:rgba(255,255,255,0.6);
           }
         }
       }
     }
   }
-  .warning {
-    width: 100%;
-    height: 100%;
-    padding: 30px 0;
-    .warnSelect {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      .warnr {
-        display: flex;
-        align-items: center;
-        .warnbutton {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 176px;
-          height: 60px;
-          background: #021722;
-          color: #ffffff;
-          font-size: 28px;
-          margin-left: 5px;
-        }
-        .warnbutton2 {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 176px;
-          height: 60px;
-          background: #002f3b;
-          border: 1px solid #0ac9cd;
-          color: #ffffff;
-          font-size: 28px;
-          margin-left: 5px;
-        }
-      }
-      .warnrt {
-        margin-left: 40px;
-      }
-      .block {
-        width: 780px;
-        background: #021722;
-        margin-left: 40px;
-        display: flex;
-        .el-range-editor.el-input__inner {
-          width: 90%;
-          height: 60px;
-          background: #021722;
-          border: none;
-        }
-        .el-date-editor .el-range-input {
-          width: 45%;
-          color: #ffffff;
-          font-size: 28px;
-          background: #021722;
-        }
-        .el-date-editor .el-range-separator {
-          width: 100px;
-          color: #ffffff;
-          margin-top: 18px;
-        }
-        .el-icon--right {
-          font-size: 30px;
-          margin-top: 15px;
-        }
-      }
-      .el-select {
-        display: block;
-        position: relative;
-        color: #ffffff;
-
-        margin-left: 40px;
-        .el-input--suffix .el-input__inner {
-          color: #fff;
-          background: #021722;
-          width: 218px;
-          height: 60px;
-          font-size: 28px;
-          border: none;
-          .el-input__icon {
-            margin-left: 40px;
-          }
-        }
-      }
-      .iconxiazai {
-        font-size: 40px;
-        margin-left: 135px;
-      }
-    }
-    .warnSelectContent {
-      width: 100%;
-      height: 1200px;
-      background: #0a263c;
-      margin-top: 10px;
-      font-size: 32px;
-      color: #ffffff;
-      .warnSelectContentOption {
-        width: 100%;
-        height: 150px;
-        border-bottom: 2px solid #0b4d5e;
-        display: flex;
-        .iconyujing {
-          color: #e83604;
-          font-size: 50px;
-          padding: 50px 0px 0 15px;
-        }
-        .right {
-          color: #e83604;
-        }
-        .error {
-          color: #fcce00;
-        }
-        .warnSelectwz {
-          padding: 30px 50px;
-        }
-      }
-    }
-  }
-}
+  
 </style>
 

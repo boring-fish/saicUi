@@ -4,11 +4,11 @@
     <div class="sceneTopd">
       <div class="sceneTopdl" @click="sceneSelect()">
         <img src="@/assets/img/logo.png" alt />
-        <span class="scenet">场景闭环指标监控</span>
+        <span class="scenet">营销闭环度量看版</span>
       </div>
       <div class="sceneTopdm">
         <img src="@/assets/img/logo.png" alt />
-        <span>场景闭环指标监控</span>
+        <span>场景闭环使用情况</span>
         <!-- todo -->
         <span>|</span>
         <span>SCRM</span>
@@ -57,10 +57,10 @@ export default class SceneTop extends Vue {
     this.menuListcx = false;
   }
   sceneSelect() {
-    this.$router.push({ path: 'sceneSelect' });
+    this.$router.push({ path: '/dashboard' });
   }
   sceneDetail() {
-    this.$router.push({ path: 'sceneDetail' });
+    this.$router.push({ path: 'sceneSelect' });
   }
 }
 </script>
@@ -97,6 +97,7 @@ export default class SceneTop extends Vue {
         background: url("../../assets/img/tabs-unchecked-left@2x.png") no-repeat;
         background-size: cover;
         margin: 65px 0 0 10px;
+        cursor: pointer;
       }
       .sceneTopdm {
         width: 1115px;
@@ -107,6 +108,7 @@ export default class SceneTop extends Vue {
         position: relative;
         .iconcaidan {
           margin-left: 120px;
+          cursor: pointer;
         }
         .selectbutton {
           position: absolute;
@@ -116,7 +118,7 @@ export default class SceneTop extends Vue {
           height: 696px;
           background: rgba(18, 22, 38, 1);
           border-radius: 24px;
-          border: 3px solid rgba(58, 66, 99, 1);
+          border: 4px solid rgba(58, 66, 99, 1);
           z-index: 1;
           padding: 45px 0;
           .el-radio-group {
@@ -162,6 +164,7 @@ export default class SceneTop extends Vue {
           no-repeat right;
         background-size: cover;
         margin: 65px 0 0 10px;
+        cursor: pointer;
       }
     }
   }

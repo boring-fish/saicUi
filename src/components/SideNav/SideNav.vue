@@ -5,7 +5,7 @@
   */
 <template>
   <div class="sidenav-wrap">
-    <h3 class="sidenav-title">公共筛选</h3>
+    <h3 class="sidenav-title">营销漏斗总览</h3>
 
     <!-- 品牌筛选 -->
     <el-radio-group  
@@ -14,16 +14,21 @@
       class ="sidenav-filter-wrap"
       v-show="$route.name !== 'dashboard'"
     >
-      <el-radio 
-          v-for="(value, index) in carType"
-          :key="index"
-          :label="value.brandName" 
-          @change="handleChange(value)"
-          :disabled="value.brandName === 'R标'"
-          class = "sidenav-filter-item"> 
-          <span class="iconfont iconche"></span>
-          <span>{{value.brandName}}</span>
-      </el-radio>
+      <template
+        v-for="(value, index) in carType"
+      >
+        <el-radio 
+            v-if="value.admission"
+            :key="index"
+            :label="value.brandName" 
+            @change="handleChange(value)"
+            :disabled="value.brandName === 'R标'"
+            class = "sidenav-filter-item"> 
+            <span class="iconfont iconche"></span>
+            <span>{{value.brandName}}</span>
+        </el-radio>
+      </template>
+
     </el-radio-group>
     <el-popover
       placement="right"
@@ -33,7 +38,7 @@
       @show="onCarPanelShow"
       @hide="onCarPanelHide"
       class="car-line-popover"
-       v-show="$route.name === 'dashboard'"
+       v-if="$route.name === 'dashboard'"
     >
       <div class="car-series-filter">
          <CarSeries
@@ -98,7 +103,9 @@
           {{value.type}}
       </el-radio>
     </div>
-    <div v-show="$route.name === 'dashboard' && brand === '名爵'" class="jump" @click="jump"><span>当日实时</span> <i class="el-icon-arrow-right el-icon--right"></i></div>
+    <div v-show="$route.name === 'dashboard'" class="jump" @click="jump"><h3>当日实时</h3> <i class="el-icon-arrow-right el-icon--right"></i></div>
+    <div v-show="$route.name === 'dashboard'" class="jump" @click="jumpEarly"><h3>产销分析洞察</h3> <i class="el-icon-arrow-right el-icon--right"></i></div>
+
   </div>
 </template>
 
@@ -159,7 +166,7 @@ export default class SideNav extends Vue {
   
   areaPanelShow: boolean = false;
   carPanelShow: boolean = false;
-  brand: string = '名爵';
+  brand: any = $permission.getDefaultBrandName();
   time: string = '当月';
   checkedAreaCode: string[] = [];
   popperOptions = {
@@ -177,6 +184,8 @@ export default class SideNav extends Vue {
   @Watch('filterBrandName')
   onFilterBrandNameChange() {
     this.brand = this.filterBrandName;
+    // console.log(this.brand);
+    
   }
 
   onAreaChange(type: string, value: any[]) {
@@ -226,7 +235,20 @@ export default class SideNav extends Vue {
     this.carPanelShow = false;
   }
   jump() {
-    window.open('https://finereport-pv.saicmotor.com/WebReport/decision/view/form?viewlet=%25E6%25BD%259C%25E5%25AE%25A2%25E7%25AE%25A1%25E7%2590%2586%252F%25E4%25BB%258A%25E6%2597%25A5%25E5%2590%2584%25E5%25A4%25A7%25E5%258C%25BA%25E8%25B7%259F%25E8%25BF%259B%25E6%2598%258E%25E7%25BB%2586_MG.frm&ref_t=design&ref_c=a5064e32-b124-4dbb-a55e-a24529dff576');
+    if (this.brand === '名爵') {
+      window.open('https://finereport-pv.saicmotor.com/WebReport/decision/view/form?viewlet=%25E6%25BD%259C%25E5%25AE%25A2%25E7%25AE%25A1%25E7%2590%2586%252F%25E4%25BB%258A%25E6%2597%25A5%25E5%2590%2584%25E5%25A4%25A7%25E5%258C%25BA%25E8%25B7%259F%25E8%25BF%259B%25E6%2598%258E%25E7%25BB%2586_MG.frm&ref_t=design&ref_c=a5064e32-b124-4dbb-a55e-a24529dff576');
+    } else if (this.brand === '荣威') {
+      window.open('https://finereport-pv.saicmotor.com/WebReport/decision/view/form?viewlet=%25E6%25BD%259C%25E5%25AE%25A2%25E7%25AE%25A1%25E7%2590%2586%252F%25E4%25BB%258A%25E6%2597%25A5%25E5%2590%2584%25E5%25A4%25A7%25E5%258C%25BA%25E8%25B7%259F%25E8%25BF%259B%25E6%2598%258E%25E7%25BB%2586_%25E8%258D%25A3%25E5%25A8%2581.frm&ref_t=design&ref_c=a5064e32-b124-4dbb-a55e-a24529dff576');
+    }
+    
+  }
+  jumpEarly() {
+    if (this.brand === '荣威') {
+      window.open('https://finereport-pv.saicmotor.com/WebReport/decision/view/form?viewlet=%25E4%25BA%25A7%25E9%2594%2580%25E9%25A2%2584%25E6%25B5%258B%25E9%25A1%25B9%25E7%259B%25AE%252F%25E4%25BA%25A7%25E9%2594%2580%25E6%2599%25BA%25E8%2583%25BD%25E5%2586%25B3%25E7%25AD%2596%25E7%259C%258B%25E6%259D%25BF.frm&ref_t=design&ref_c=05933197-9328-491a-b908-fb4a84584e77&loginName=baf56627478ec76a');
+    } else if (this.brand === '名爵') {
+      window.open(' https://finereport-pv.saicmotor.com/WebReport/decision/view/form?viewlet=%25E4%25BA%25A7%25E9%2594%2580%25E9%25A2%2584%25E6%25B5%258B%25E9%25A1%25B9%25E7%259B%25AE%252F%25E4%25BA%25A7%25E9%2594%2580%25E6%2599%25BA%25E8%2583%25BD%25E5%2586%25B3%25E7%25AD%2596%25E7%259C%258B%25E6%259D%25BF.frm&ref_t=design&ref_c=05933197-9328-491a-b908-fb4a84584e77&loginName=e4aaf9573aa5dff9');
+    }
+    
   }
   created() {
     
@@ -367,14 +389,26 @@ export default class SideNav extends Vue {
   width: 100%;
   height: 40px;
   margin: 34px 0;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 28px;
-  font-weight: 100;
+  // color: rgba(255, 255, 255, 0.6);
+  color: #fff !important;
+  font-size: 36px !important;
+  // font-weight: 100;
   padding-left: 36px;
+  padding-right: 52px;
   cursor:pointer;
-    span{
-      margin-right: 240px;
-    }
+  h3{
+    //  margin-right: 240px;
+     font-size: 36px;
+     color: #fff;
+     display: inline-block;
+  }
+    // span{
+    //   margin-right: 240px;
+    // }
+    .el-icon--right {
+    margin-left: -42px;
+    float: right;
+}
 }
 }
 
